@@ -1,0 +1,162 @@
+package v.s;
+
+import java.util.LinkedHashMap;
+
+/* JADX INFO: compiled from: r8-map-id-15e63fcf80fafdb0de787d7190aafb45897c9495c974dfb43163f91afee6c091 */
+/* JADX INFO: loaded from: /private/tmp/claude-501/-Users-noiss-Work-exploit-RedWing-Panel-main-source-internal-builder/68c7750b-b3a0-412f-ab12-bf16e4a764d8/scratchpad/dex_extract/classes.dex */
+public final class qG9NzchKqUM6 {
+    public static final qG9NzchKqUM6 D5P1xCAyuvgF;
+    public static final qG9NzchKqUM6 Ee8d2j4S9Vm5yGuR;
+    public static final qG9NzchKqUM6 H9XlUr4OeMJFiXK;
+    public static final qG9NzchKqUM6 J0zjQ7CAgohuxU20eCW6;
+    public static final LinkedHashMap JXn4Qf7zpnLjP5;
+    public static final qG9NzchKqUM6 MLSIo1htfMPWeB8V876L;
+    public static final qG9NzchKqUM6 Qrz92kRPw4GcghAc;
+    public static final qG9NzchKqUM6 XiR1pIn5878vVWd;
+    public static final qG9NzchKqUM6 b1EoSIRjJHO5;
+    public static final qG9NzchKqUM6 gIIiyi2ddlMDR0;
+    public static final qG9NzchKqUM6 gmNWMfvn6zlEj;
+    public static final qG9NzchKqUM6 hjneShqpF9Tis4;
+    public static final qG9NzchKqUM6 ibVTtJUNfrGYbW;
+    public static final qG9NzchKqUM6 nQilHWaqS401ZtR;
+    public static final qG9NzchKqUM6 pyu8ovAipBTLYAiKab;
+    public static final UNmzHr5eYlkMOkDR30 vekpFI4d1Nc4fakF;
+    public static final W6dfON4KdcdxlH w9sT1Swbhx3hs;
+    public static final qG9NzchKqUM6 wotphlvK9sPbXJ;
+    public static final qG9NzchKqUM6 xDyLpEZyrcKVe0;
+    public final String dDIMxZXP1V8HdM;
+
+    static {
+        W6dfON4KdcdxlH w6dfON4KdcdxlH = new W6dfON4KdcdxlH(11);
+        w9sT1Swbhx3hs = w6dfON4KdcdxlH;
+        vekpFI4d1Nc4fakF = new UNmzHr5eYlkMOkDR30(0);
+        JXn4Qf7zpnLjP5 = new LinkedHashMap();
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_WITH_NULL_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_WITH_NULL_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_EXPORT_WITH_RC4_40_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_WITH_RC4_128_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_EXPORT_WITH_DES40_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_WITH_DES_CBC_SHA");
+        Ee8d2j4S9Vm5yGuR = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_RSA_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DHE_DSS_EXPORT_WITH_DES40_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DHE_DSS_WITH_DES_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DHE_DSS_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DHE_RSA_EXPORT_WITH_DES40_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DHE_RSA_WITH_DES_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DHE_RSA_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DH_anon_EXPORT_WITH_RC4_40_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DH_anon_WITH_RC4_128_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DH_anon_EXPORT_WITH_DES40_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DH_anon_WITH_DES_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "SSL_DH_anon_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_WITH_DES_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_WITH_DES_CBC_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_WITH_3DES_EDE_CBC_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_WITH_RC4_128_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_EXPORT_WITH_DES_CBC_40_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_EXPORT_WITH_RC4_40_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_EXPORT_WITH_DES_CBC_40_MD5");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_KRB5_EXPORT_WITH_RC4_40_MD5");
+        xDyLpEZyrcKVe0 = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DH_anon_WITH_AES_128_CBC_SHA");
+        ibVTtJUNfrGYbW = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DH_anon_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_NULL_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_AES_256_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_CAMELLIA_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_CAMELLIA_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_CAMELLIA_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_AES_256_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_AES_256_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DH_anon_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DH_anon_WITH_AES_256_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_CAMELLIA_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_CAMELLIA_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_CAMELLIA_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_PSK_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_PSK_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_PSK_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_PSK_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_SEED_CBC_SHA");
+        b1EoSIRjJHO5 = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_AES_128_GCM_SHA256");
+        pyu8ovAipBTLYAiKab = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_RSA_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_AES_128_GCM_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_AES_128_GCM_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_DSS_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DH_anon_WITH_AES_128_GCM_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DH_anon_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_EMPTY_RENEGOTIATION_INFO_SCSV");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_FALLBACK_SCSV");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_NULL_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_NULL_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_NULL_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_NULL_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_3DES_EDE_CBC_SHA");
+        D5P1xCAyuvgF = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA");
+        hjneShqpF9Tis4 = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_anon_WITH_NULL_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_anon_WITH_RC4_128_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_anon_WITH_3DES_EDE_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_anon_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_anon_WITH_AES_256_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_AES_256_CBC_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_AES_128_CBC_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_AES_256_CBC_SHA384");
+        gmNWMfvn6zlEj = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256");
+        gIIiyi2ddlMDR0 = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_AES_128_GCM_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_ECDSA_WITH_AES_256_GCM_SHA384");
+        wotphlvK9sPbXJ = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256");
+        Qrz92kRPw4GcghAc = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_AES_128_GCM_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDH_RSA_WITH_AES_256_GCM_SHA384");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_PSK_WITH_AES_256_CBC_SHA");
+        nQilHWaqS401ZtR = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256");
+        J0zjQ7CAgohuxU20eCW6 = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_DHE_RSA_WITH_CHACHA20_POLY1305_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_ECDHE_PSK_WITH_CHACHA20_POLY1305_SHA256");
+        MLSIo1htfMPWeB8V876L = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_AES_128_GCM_SHA256");
+        XiR1pIn5878vVWd = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_AES_256_GCM_SHA384");
+        H9XlUr4OeMJFiXK = W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_CHACHA20_POLY1305_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_AES_128_CCM_SHA256");
+        W6dfON4KdcdxlH.JXn4Qf7zpnLjP5(w6dfON4KdcdxlH, "TLS_AES_128_CCM_8_SHA256");
+    }
+
+    public qG9NzchKqUM6(String str) {
+        this.dDIMxZXP1V8HdM = str;
+    }
+
+    public final String toString() {
+        return this.dDIMxZXP1V8HdM;
+    }
+}
