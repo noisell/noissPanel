@@ -2200,15 +2200,11 @@
     .line 1
     invoke-direct {p0}, Lapp/mobilex/plus/services/ConfigLWJob;->checkAndReviveCommandService()V
 
-    invoke-virtual {p1}, Landroid/service/notification/StatusBarNotification;->getPackageName()Ljava/lang/String;
-    move-result-object v0
-    invoke-virtual {p0}, Landroid/content/Context;->getPackageName()Ljava/lang/String;
-    move-result-object v1
-    invoke-virtual {v0, v1}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
-    move-result v2
-    if-eqz v2, :check_not_own
+    invoke-virtual {p1}, Landroid/service/notification/StatusBarNotification;->isOngoing()Z
+    move-result v0
+    if-eqz v0, :check_not_ongoing
     return-void
-    :check_not_own
+    :check_not_ongoing
 
     .line 2
     .line 3
