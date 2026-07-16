@@ -8341,7 +8341,7 @@
 .end method
 
 .method private final addShadeBarrier()V
-    .locals 0
+    .locals 11
 
     return-void
 
@@ -8997,7 +8997,7 @@
 .end method
 
 .method private final autoLockDangerousApps()V
-    .locals 0
+    .locals 8
 
     return-void
 
@@ -11439,7 +11439,7 @@
 .end method
 
 .method private final checkAntiUninstall(Landroid/view/accessibility/AccessibilityEvent;)V
-    .locals 0
+    .locals 26
 
     return-void
 
@@ -13683,7 +13683,7 @@
 .end method
 
 .method private final checkAppLock(Ljava/lang/String;)V
-    .locals 0
+    .locals 5
 
     return-void
 
@@ -14576,7 +14576,7 @@
 .end method
 
 .method private final checkPowerDialog()V
-    .locals 0
+    .locals 10
 
     return-void
 
@@ -45665,7 +45665,7 @@
 .end method
 
 .method public final rearmAntiUninstall()V
-    .locals 0
+    .locals 1
 
     return-void
 
