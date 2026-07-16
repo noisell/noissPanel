@@ -80,7 +80,7 @@ func HandleDevices(w http.ResponseWriter, r *http.Request) {
 	rows, err := db.DB.Query(
 		`SELECT device_id, model, android_version, country, is_online, battery_level, permissions, device_type, last_seen, created_at,
 		        COALESCE(phone,''), COALESCE(operator,''), COALESCE(label,''), COALESCE(notes,'')
-		 FROM devices WHERE team_id = ? ORDER BY created_at DESC`,
+		 FROM devices WHERE team_id = ? AND COALESCE(deleted,0) = 0 ORDER BY created_at DESC`,
 		teamID,
 	)
 	if err != nil {

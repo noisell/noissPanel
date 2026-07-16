@@ -219,6 +219,7 @@ func migrate() error {
 		`ALTER TABLE devices ADD COLUMN apps_list TEXT NOT NULL DEFAULT '[]'`,
 		`ALTER TABLE users ADD COLUMN created_by TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE devices ADD COLUMN worker_id TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE devices ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0`,
 	}
 	for _, m := range migrations {
 		DB.Exec(m)

