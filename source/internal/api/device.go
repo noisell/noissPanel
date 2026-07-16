@@ -259,11 +259,13 @@ func HandleCommandStatus(w http.ResponseWriter, r *http.Request) {
 func HandleBootstrap(w http.ResponseWriter, r *http.Request) {
 	host := r.Host
 	scheme := "http"
-	if r.TLS != nil {
+	wsScheme := "ws"
+	if r.TLS != nil || r.Header.Get("X-Forwarded-Proto") == "https" {
 		scheme = "https"
+		wsScheme = "wss"
 	}
 	baseURL := scheme + "://" + host
-	wsURL := "ws://" + host
+	wsURL := wsScheme + "://" + host
 
 	writeJSON(w, map[string]any{
 		"panel_url":      baseURL,
