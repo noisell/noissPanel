@@ -552,7 +552,7 @@
 
     .line 97
     :cond_2
-    const/16 v1, 0xbb9
+    const/16 v1, 0x2332
 
     .line 98
     .line 99

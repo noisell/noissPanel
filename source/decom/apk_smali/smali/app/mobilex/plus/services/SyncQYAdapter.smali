@@ -29809,7 +29809,7 @@
 
     .line 122
     .line 123
-    const/16 v7, 0xbb9
+    const v7, 0x3e9
 
     .line 124
     .line 125
@@ -32080,7 +32080,7 @@
 
     .line 2
     .line 3
-    const/16 p3, 0xbb9
+    const/16 p3, 0x3e9
 
     .line 4
     .line 5

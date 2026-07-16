@@ -480,7 +480,7 @@
 
     .line 81
     :cond_1
-    const/16 p1, 0xbb9
+    const/16 p1, 0x3f1
 
     .line 82
     .line 83

@@ -1160,7 +1160,7 @@
     nop
 
     .line 29
-    const/16 v1, 0xbb9
+    const/16 v1, 0x26ad
 
     .line 30
     .line 31
