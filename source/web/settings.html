@@ -2969,7 +2969,7 @@
             const actionFilter = document.getElementById('logFilterAction')?.value || '';
 
             try {
-                let url = `${API_URL}/api/panel/operator-logs/${teamId}?limit=200&login=${encodeURIComponent(userLogin)}&role=${encodeURIComponent(userRole)}`;
+                let url = `${API_URL}/api/panel/action-logs/${teamId}?limit=200&login=${encodeURIComponent(userLogin)}&role=${encodeURIComponent(userRole)}`;
                 if (actionFilter) url += `&action_type=${encodeURIComponent(actionFilter)}`;
 
                 const resp = await fetch(url);

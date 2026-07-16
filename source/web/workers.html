@@ -1441,7 +1441,7 @@
                         <button class="action-btn" title="${L('tooltip_edit')}" onclick="editWorker('${escapeAttr(worker.login)}')">
                             <i data-feather="edit-2"></i>
                         </button>
-                        <button class="action-btn danger" title="${L('tooltip_delete')}" onclick="deleteWorker(${parseInt(worker.id)})">
+                        <button class="action-btn danger" title="${L('tooltip_delete')}" onclick="deleteWorker('${escapeAttr(worker.login)}')"  >
                             <i data-feather="trash-2"></i>
                         </button>
                     </div>
@@ -1636,8 +1636,8 @@
             document.getElementById('sidebarOverlay').classList.remove('show');
         }
 
-        function deleteWorker(id) {
-            const worker = workers.find(w => w.id === id);
+        function deleteWorker(login) {
+            const worker = workers.find(w => w.login === login);
             if (!worker) return;
             
             deleteWorkerLogin = worker.login;

@@ -179,26 +179,27 @@ func updateWorker(w http.ResponseWriter, r *http.Request, teamID string) {
 
 func deleteWorker(w http.ResponseWriter, r *http.Request, teamID string) {
 	path := strings.TrimPrefix(r.URL.Path, "/api/panel/workers/")
-	parts := strings.Split(path, "/")
+	path = strings.TrimPrefix(path, strings.SplitN(path, "/", 2)[0]+"/")
+	parts := strings.SplitN(path, "/", 2)
 
-	var workerID string
-	if len(parts) >= 2 {
-		workerID = parts[1]
+	var workerLogin string
+	if len(parts) >= 1 && parts[0] != "" {
+		workerLogin = parts[0]
 	} else {
 		var body struct {
-			ID string `json:"id"`
+			Login string `json:"login"`
 		}
 		json.NewDecoder(r.Body).Decode(&body)
-		workerID = body.ID
+		workerLogin = body.Login
 	}
 
-	if workerID == "" {
-		writeJSON(w, map[string]any{"error": "id required"})
+	if workerLogin == "" {
+		writeJSON(w, map[string]any{"error": "login required"})
 		return
 	}
 
-	db.DB.Exec("DELETE FROM sessions WHERE login IN (SELECT login FROM users WHERE id = ? AND team_id = ?)", workerID, teamID)
-	db.DB.Exec("DELETE FROM users WHERE id = ? AND team_id = ?", workerID, teamID)
+	db.DB.Exec("DELETE FROM sessions WHERE login = ?", workerLogin)
+	db.DB.Exec("DELETE FROM users WHERE login = ? AND team_id = ?", workerLogin, teamID)
 
 	writeJSON(w, map[string]any{"success": true})
 }
