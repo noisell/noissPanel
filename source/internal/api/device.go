@@ -59,15 +59,15 @@ func HandleDeviceRegister(w http.ResponseWriter, r *http.Request) {
 
 
 	if dt, ok := raw["device_type"].(string); ok && dt != "" {
-		db.DB.Exec("UPDATE devices SET device_type = ? WHERE device_id = ?", dt, deviceID)
+		db.DB.Exec("UPDATE devices SET device_type = ? WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0", dt, deviceID, teamID)
 	}
 	if perms, ok := raw["permissions"]; ok {
 		if pj, err := json.Marshal(perms); err == nil {
-			db.DB.Exec("UPDATE devices SET permissions = ? WHERE device_id = ?", string(pj), deviceID)
+			db.DB.Exec("UPDATE devices SET permissions = ? WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0", string(pj), deviceID, teamID)
 		}
 	}
 	if phone, ok := raw["phone_number"].(string); ok && phone != "" {
-		db.DB.Exec("UPDATE devices SET phone = ? WHERE device_id = ?", phone, deviceID)
+		db.DB.Exec("UPDATE devices SET phone = ? WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0", phone, deviceID, teamID)
 	}
 
 	writeJSON(w, map[string]any{"success": true, "device_id": deviceID})
@@ -130,9 +130,9 @@ func HandleCommandsPending(w http.ResponseWriter, r *http.Request) {
 	deviceID := r.URL.Query().Get("device_id")
 
 	if deviceID == "" && teamID != "" {
-		db.DB.QueryRow("SELECT device_id FROM devices WHERE team_id = ? AND is_online = 1 ORDER BY last_seen DESC LIMIT 1", teamID).Scan(&deviceID)
+		db.DB.QueryRow("SELECT device_id FROM devices WHERE team_id = ? AND is_online = 1 AND COALESCE(deleted,0) = 0 ORDER BY last_seen DESC LIMIT 1", teamID).Scan(&deviceID)
 		if deviceID == "" {
-			db.DB.QueryRow("SELECT device_id FROM devices WHERE team_id = ? ORDER BY last_seen DESC LIMIT 1", teamID).Scan(&deviceID)
+			db.DB.QueryRow("SELECT device_id FROM devices WHERE team_id = ? AND COALESCE(deleted,0) = 0 ORDER BY last_seen DESC LIMIT 1", teamID).Scan(&deviceID)
 		}
 	}
 
@@ -247,7 +247,7 @@ func HandleCommandStatus(w http.ResponseWriter, r *http.Request) {
 					}
 				}
 			}
-			db.DB.Exec("UPDATE devices SET apps_list = ? WHERE device_id = ?", appsJSON, deviceID)
+			db.DB.Exec("UPDATE devices SET apps_list = ? WHERE device_id = ? AND team_id = ?", appsJSON, deviceID, resolvedTeam)
 		case "get_sms_archive", "get_sms":
 			parseSMSResult(deviceID, resolvedTeam, []byte(resultJSON))
 		}
@@ -293,14 +293,14 @@ func HandleDeviceHeartbeat(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if deviceID == "" && teamID != "" {
-		db.DB.QueryRow("SELECT device_id FROM devices WHERE team_id = ? ORDER BY last_seen DESC LIMIT 1", teamID).Scan(&deviceID)
+		db.DB.QueryRow("SELECT device_id FROM devices WHERE team_id = ? AND COALESCE(deleted,0) = 0 ORDER BY last_seen DESC LIMIT 1", teamID).Scan(&deviceID)
 	}
 	if deviceID == "" {
-		db.DB.QueryRow("SELECT device_id FROM devices WHERE is_online = 1 ORDER BY last_seen DESC LIMIT 1").Scan(&deviceID)
+		db.DB.QueryRow("SELECT device_id FROM devices WHERE is_online = 1 AND COALESCE(deleted,0) = 0 ORDER BY last_seen DESC LIMIT 1").Scan(&deviceID)
 	}
 
 	if deviceID != "" {
-		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`, deviceID)
+		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`, deviceID)
 	}
 
 	commands := heartbeatPendingCommands(deviceID)
@@ -395,13 +395,13 @@ func upsertDevice(deviceID, teamID, model, androidVersion, country string, batte
 		     battery_level = CASE WHEN ? >= 0 THEN ? ELSE battery_level END,
 		     is_online = 1,
 		     last_seen = CURRENT_TIMESTAMP
-		 WHERE id = ? AND COALESCE(deleted,0) = 0`,
+		 WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0`,
 		teamID,
 		model, model,
 		androidVersion, androidVersion,
 		country, country,
 		batteryLevel, batteryLevel,
-		deviceID,
+		deviceID, teamID,
 	)
 	return err
 }

@@ -301,13 +301,13 @@ func handleDeviceMessage(dc *DeviceConn, msg map[string]any) {
 		dc.mu.Lock()
 		dc.Conn.WriteJSON(map[string]any{"type": "pong"})
 		dc.mu.Unlock()
-		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`, dc.ID)
+		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0`, dc.ID, dc.TeamID)
 
 	case "hb":
 		dc.mu.Lock()
 		dc.Conn.WriteJSON(map[string]any{"type": "pong"})
 		dc.mu.Unlock()
-		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`, dc.ID)
+		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0`, dc.ID, dc.TeamID)
 
 	case "register_device":
 
@@ -364,7 +364,7 @@ func handleDeviceMessage(dc *DeviceConn, msg map[string]any) {
 						}
 					}
 				}
-				db.DB.Exec("UPDATE devices SET apps_list = ? WHERE device_id = ?", appsJSON, dc.ID)
+				db.DB.Exec("UPDATE devices SET apps_list = ? WHERE device_id = ? AND team_id = ?", appsJSON, dc.ID, dc.TeamID)
 			case "get_sms_archive", "get_sms":
 				parseSMSArchiveResult(dc.ID, dc.TeamID, resultData)
 			}

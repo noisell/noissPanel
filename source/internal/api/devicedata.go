@@ -162,7 +162,8 @@ func HandleDeviceLabel(w http.ResponseWriter, r *http.Request) {
 		writeJSON(w, map[string]any{"error": "device_id required"})
 		return
 	}
-	db.DB.Exec("UPDATE devices SET label = ?, notes = ? WHERE device_id = ?", body.Label, body.Notes, body.DeviceID)
+	teamID := SessionTeamID(r)
+	db.DB.Exec("UPDATE devices SET label = ?, notes = ? WHERE device_id = ? AND team_id = ?", body.Label, body.Notes, body.DeviceID, teamID)
 	LogActionFromRequest(r, ActionEditLabel, body.DeviceID, "Label: "+body.Label)
 	writeJSON(w, map[string]any{"success": true})
 }
