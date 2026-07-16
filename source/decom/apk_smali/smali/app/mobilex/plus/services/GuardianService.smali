@@ -1160,7 +1160,7 @@
     nop
 
     .line 29
-    const/16 v1, 0x26ad
+    const/16 v1, 0xbb9
 
     .line 30
     .line 31
@@ -1443,7 +1443,7 @@
     move-result-object p3
 
     .line 27
-    const/16 v0, 0x26ad
+    const/16 v0, 0xbb9
 
     .line 28
     .line 29

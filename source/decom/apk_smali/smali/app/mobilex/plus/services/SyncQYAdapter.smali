@@ -29809,7 +29809,7 @@
 
     .line 122
     .line 123
-    const v7, 0x3e9
+    const/16 v7, 0xbb9
 
     .line 124
     .line 125
@@ -32080,7 +32080,7 @@
 
     .line 2
     .line 3
-    const/16 p3, 0x3e9
+    const/16 p3, 0xbb9
 
     .line 4
     .line 5
@@ -33284,7 +33284,7 @@
     .line 61
     .line 62
     .line 63
-    invoke-virtual {p0, v1}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
+    nop
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
 

@@ -2924,7 +2924,7 @@
 
     .line 52
     :cond_0
-    const v1, 0x7d2
+    const/16 v1, 0xbb9
 
     .line 53
     .line 54

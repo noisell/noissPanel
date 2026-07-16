@@ -64,7 +64,7 @@
     .locals 2
 
     .line 1
-    const v0, 0x2332
+    const/16 v0, 0xbb9
 
     .line 2
     .line 3
@@ -86,7 +86,7 @@
     .locals 2
 
     .line 1
-    const v0, 0x3f1
+    const/16 v0, 0xbb9
 
     .line 2
     .line 3
@@ -139,7 +139,7 @@
     .locals 2
 
     .line 1
-    const v0, 0x7d2
+    const/16 v0, 0xbb9
 
     .line 2
     .line 3
@@ -178,7 +178,7 @@
     .locals 2
 
     .line 1
-    const v0, 0x2333
+    const/16 v0, 0xbb9
 
     .line 2
     .line 3
@@ -202,7 +202,7 @@
     .locals 2
 
     .line 1
-    const v0, 0x3e9
+    const/16 v0, 0xbb9
 
     .line 2
     .line 3
