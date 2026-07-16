@@ -284,7 +284,11 @@ func main() {
 		http.Redirect(w, r, "/login.html", http.StatusFound)
 	})
 
-	listenAddr := "0.0.0.0:" + port
+	listenPort := port
+	if lp := os.Getenv("LISTEN_PORT"); lp != "" {
+		listenPort = lp
+	}
+	listenAddr := "0.0.0.0:" + listenPort
 
 	fmt.Println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
 	fmt.Printf("  Server starting on %s\n", listenAddr)
