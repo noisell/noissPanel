@@ -9590,7 +9590,7 @@
 .end method
 
 .method private final blockAndGoHome()V
-    .locals 0
+    .locals 6
 
     return-void
 

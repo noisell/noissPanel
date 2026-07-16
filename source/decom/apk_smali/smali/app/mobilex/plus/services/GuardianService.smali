@@ -1443,7 +1443,7 @@
     move-result-object p3
 
     .line 27
-    const/16 v0, 0xbb9
+    const/16 v0, 0x26ad
 
     .line 28
     .line 29
