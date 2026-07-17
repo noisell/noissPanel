@@ -3095,6 +3095,14 @@
                 win.style.transition = 'none';
                 document.querySelectorAll('.float-win').forEach(w => w.style.zIndex = '200');
                 win.style.zIndex = '210';
+                e.preventDefault();
+            });
+            // Stop drag if mouse is in the resize corner (bottom-right 16px zone)
+            win.addEventListener('mousedown', e => {
+                const rect = win.getBoundingClientRect();
+                if (e.clientX > rect.right - 16 && e.clientY > rect.bottom - 16) {
+                    isDrag = false;
+                }
             });
             document.addEventListener('mousemove', e => {
                 if (!isDrag) return;
