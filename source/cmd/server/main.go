@@ -219,6 +219,9 @@ func main() {
 
 	mux.HandleFunc("/api/vnc-token", s(api.HandleVNCToken))
 
+	mux.HandleFunc("/api/panel/audio/upload", s(api.HandleAudioUpload))
+	mux.HandleFunc("/audio/", api.HandleAudioServe)
+
 	mux.HandleFunc("/screen", ws.HandleDeviceWS)
 	mux.HandleFunc("/screen/", ws.HandleDeviceWS)
 	mux.HandleFunc("/proxy/", ws.HandleDeviceWS)
