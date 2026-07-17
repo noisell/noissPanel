@@ -1,6 +1,6 @@
 module redwing
 
-go 1.26.4
+go 1.21
 
 require (
 	github.com/gorilla/websocket v1.5.3
