@@ -79,17 +79,25 @@ func main() {
 		if count == 0 {
 			fmt.Println("\n  Аккаунтов нет. Создание админа...")
 			fmt.Println("  No accounts found. Creating admin...")
-			fmt.Print("  Логин / Login (Enter = admin): ")
-			adminLogin, _ := reader.ReadString('\n')
-			adminLogin = strings.TrimSpace(adminLogin)
+
+			adminLogin := os.Getenv("ADMIN_LOGIN")
+			adminPass := os.Getenv("ADMIN_PASS")
+
 			if adminLogin == "" {
-				adminLogin = "admin"
+				fmt.Print("  Логин / Login (Enter = admin): ")
+				adminLogin, _ = reader.ReadString('\n')
+				adminLogin = strings.TrimSpace(adminLogin)
+				if adminLogin == "" {
+					adminLogin = "admin"
+				}
 			}
-			fmt.Print("  Пароль / Password (Enter = auto): ")
-			adminPass, _ := reader.ReadString('\n')
-			adminPass = strings.TrimSpace(adminPass)
 			if adminPass == "" {
-				adminPass = auth.GenerateID()[:10]
+				fmt.Print("  Пароль / Password (Enter = auto): ")
+				adminPass, _ = reader.ReadString('\n')
+				adminPass = strings.TrimSpace(adminPass)
+				if adminPass == "" {
+					adminPass = auth.GenerateID()[:10]
+				}
 			}
 
 			teamID := api.GenerateTeamIDPublic()

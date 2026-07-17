@@ -1,0 +1,53 @@
+services:
+
+  panel:
+    build: .
+    restart: unless-stopped
+    volumes:
+      - panel_data:/app/data
+    environment:
+      - SERVER_IP=${DOMAIN}
+      - PORT=443
+      - LISTEN_PORT=8080
+      - REGISTRATION=closed
+      - ADMIN_LOGIN=${ADMIN_LOGIN:-admin}
+      - ADMIN_PASS=${ADMIN_PASS}
+      - BUILDER_BOT_TOKEN=${BUILDER_BOT_TOKEN:-}
+
+  nginx:
+    image: nginx:alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/panel.conf:/etc/nginx/templates/panel.conf.template:ro
+      - certbot_certs:/etc/letsencrypt:ro
+      - certbot_www:/var/www/certbot:ro
+    environment:
+      - DOMAIN=${DOMAIN}
+      - NGINX_ENVSUBST_TEMPLATE_DIR=/etc/nginx/templates
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx/conf.d
+    depends_on:
+      - panel
+
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certbot_certs:/etc/letsencrypt
+      - certbot_www:/var/www/certbot
+    entrypoint: >
+      sh -c "
+        certbot certonly --webroot -w /var/www/certbot
+        -d $${DOMAIN}
+        --email $${CERTBOT_EMAIL}
+        --agree-tos --non-interactive --keep-until-expiring
+      "
+    environment:
+      - DOMAIN=${DOMAIN}
+      - CERTBOT_EMAIL=${CERTBOT_EMAIL}
+
+volumes:
+  panel_data:
+  certbot_certs:
+  certbot_www:
