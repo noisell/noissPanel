@@ -16,19 +16,23 @@ if [ -z "$DOMAIN" ] || [ -z "$CERTBOT_EMAIL" ] || [ -z "$ADMIN_PASS" ]; then
     exit 1
 fi
 
-echo "[1/4] Собираем образ..."
+echo "[1/4] Освобождаем порты 80 и 443..."
+systemctl stop nginx apache2 httpd 2>/dev/null || true
+fuser -k 80/tcp 443/tcp 2>/dev/null || true
+sleep 1
+
+echo "[2/4] Собираем образ..."
 docker compose build
 
-echo "[2/4] Запускаем nginx на HTTP для получения сертификата..."
-# Временный nginx только на 80 для ACME challenge
+echo "[3/4] Запускаем nginx на HTTP для получения сертификата..."
 docker compose up -d nginx
 sleep 3
 
-echo "[3/4] Получаем SSL сертификат..."
+echo "[4/4] Получаем SSL сертификат..."
 docker compose run --rm certbot
 sleep 2
 
-echo "[4/4] Запускаем всё..."
+echo "[5/5] Запускаем всё..."
 docker compose up -d
 
 echo ""
