@@ -1699,7 +1699,7 @@
 
 
                 <!-- Camera Stream Floating Viewer -->
-                <div id="cameraStreamViewer" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.8);border:2px solid rgba(220,53,69,0.5);cursor:move;resize:both;min-width:200px;min-height:150px;width:320px;height:240px;background:#000;">
+                <div id="cameraStreamViewer" style="display:none;position:fixed;bottom:20px;right:20px;z-index:9999;border-radius:12px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.8);border:2px solid rgba(220,53,69,0.5);resize:both;min-width:200px;min-height:150px;width:320px;height:240px;background:#000;">
                     <div style="position:absolute;top:0;left:0;right:0;padding:4px 10px;background:linear-gradient(180deg,rgba(0,0,0,0.8),transparent);z-index:2;display:flex;justify-content:space-between;align-items:center;">
                         <span id="camStreamLabel" style="font-size:0.7rem;color:#e74c3c;font-weight:600;">LIVE CAM</span>
                         <span id="camStreamFps" style="font-size:0.65rem;color:#667;"></span>
@@ -7705,9 +7705,11 @@
             let isDragging = false, startX, startY, origX, origY;
             el.onmousedown = function(e) {
                 if (e.target.tagName === 'BUTTON') return;
+                // Don't start drag if click is in the resize handle zone (bottom-right 20x20px)
+                const rect = el.getBoundingClientRect();
+                if (e.clientX > rect.right - 20 && e.clientY > rect.bottom - 20) return;
                 isDragging = true;
                 startX = e.clientX; startY = e.clientY;
-                const rect = el.getBoundingClientRect();
                 origX = rect.left; origY = rect.top;
                 e.preventDefault();
             };
