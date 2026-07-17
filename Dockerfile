@@ -2,7 +2,7 @@ FROM golang:1.25-bookworm AS builder
 
 WORKDIR /build
 COPY source/ .
-RUN go build -o server ./cmd/server/
+RUN go mod tidy && go build -o server ./cmd/server/
 
 # ── Runtime ────────────────────────────────────────────────────────
 FROM debian:bookworm-slim
