@@ -270,7 +270,7 @@ type langStrings struct {
 
 var langs = map[string]langStrings{
 	"ru": {
-		Welcome:         "👋 RedWing cracked by @omnibotnet\n\n👥 Команда: %s\n\n⚡ Выбери тип сборки:",
+		Welcome:         "👋 noissPanel\n\n👥 Команда: %s\n\n⚡ Выбери тип сборки:",
 		ChooseType:      "⚡ Выбери тип сборки:",
 		StealerAPK:      "Stealer APK",
 		RatAPK:          "RAT APK",
@@ -317,7 +317,7 @@ var langs = map[string]langStrings{
 		ChooseLang:     "🌐 Выбери язык / Choose language:",
 	},
 	"en": {
-		Welcome:         "👋 RedWing cracked by @omnibotnet\n\n👥 Team: %s\n\n⚡ Choose build type:",
+		Welcome:         "👋 NoissPanel\n\n👥 Team: %s\n\n⚡ Choose build type:",
 		ChooseType:      "⚡ Choose build type:",
 		StealerAPK:      "Stealer APK",
 		RatAPK:          "RAT APK",
