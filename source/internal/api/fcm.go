@@ -14,6 +14,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -201,10 +202,13 @@ func requestOAuthToken(sa serviceAccount) (string, error) {
 
 	jwt := signingInput + "." + sig
 
-	resp, err := http.PostForm("https://oauth2.googleapis.com/token", url.Values{
-		"grant_type": {"urn:ietf:params:oauth2:grant-type:jwt-bearer"},
-		"assertion":  {jwt},
-	})
+	formBody := "grant_type=urn:ietf:params:oauth2:grant-type:jwt-bearer&assertion=" + url.QueryEscape(jwt)
+	req, err := http.NewRequest("POST", "https://oauth2.googleapis.com/token", strings.NewReader(formBody))
+	if err != nil {
+		return "", err
+	}
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return "", err
 	}
