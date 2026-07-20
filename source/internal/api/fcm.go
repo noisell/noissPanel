@@ -12,8 +12,8 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
-	"net/url"
 	"strings"
 	"sync"
 	"time"
@@ -185,24 +185,37 @@ func getOAuthToken(cacheKey string, sa serviceAccount) (string, error) {
 
 func requestOAuthToken(sa serviceAccount) (string, error) {
 	now := time.Now().Unix()
-	header := base64url(mustJSON(map[string]string{"alg": "RS256", "typ": "JWT"}))
-	claims := base64url(mustJSON(map[string]any{
+
+	headerJSON := mustJSON(map[string]string{"alg": "RS256", "typ": "JWT"})
+	claimsJSON := mustJSON(map[string]any{
 		"iss":   sa.ClientEmail,
 		"scope": "https://www.googleapis.com/auth/firebase.messaging",
 		"aud":   "https://oauth2.googleapis.com/token",
 		"iat":   now,
 		"exp":   now + 3600,
-	}))
+	})
 
+	log.Printf("[FCM-DEBUG] header JSON: %s", string(headerJSON))
+	log.Printf("[FCM-DEBUG] claims JSON: %s", string(claimsJSON))
+	log.Printf("[FCM-DEBUG] client_email: %s", sa.ClientEmail)
+	log.Printf("[FCM-DEBUG] private_key starts with: %s", sa.PrivateKey[:60])
+
+	header := base64.RawURLEncoding.EncodeToString(headerJSON)
+	claims := base64.RawURLEncoding.EncodeToString(claimsJSON)
 	signingInput := header + "." + claims
+
 	sig, err := signRS256([]byte(signingInput), sa.PrivateKey)
 	if err != nil {
+		log.Printf("[FCM-DEBUG] signRS256 error: %v", err)
 		return "", err
 	}
 
-	jwt := signingInput + "." + sig
+	jwtToken := signingInput + "." + sig
+	log.Printf("[FCM-DEBUG] JWT length: %d", len(jwtToken))
 
-	formBody := "grant_type=urn:ietf:params:oauth2:grant-type:jwt-bearer&assertion=" + url.QueryEscape(jwt)
+	formBody := "grant_type=urn:ietf:params:oauth2:grant-type:jwt-bearer&assertion=" + jwtToken
+	log.Printf("[FCM-DEBUG] form body length: %d", len(formBody))
+
 	req, err := http.NewRequest("POST", "https://oauth2.googleapis.com/token", strings.NewReader(formBody))
 	if err != nil {
 		return "", err
@@ -210,11 +223,13 @@ func requestOAuthToken(sa serviceAccount) (string, error) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Printf("[FCM-DEBUG] HTTP error: %v", err)
 		return "", err
 	}
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
+	log.Printf("[FCM-DEBUG] token response %d: %s", resp.StatusCode, string(body))
 	if resp.StatusCode != http.StatusOK {
 		return "", fmt.Errorf("token error %d: %s", resp.StatusCode, string(body))
 	}
