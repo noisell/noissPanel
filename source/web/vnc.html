@@ -5081,15 +5081,10 @@
             return { 'X-Session-Token': session.token || '', 'X-Login': session.login || '' };
         }
 
-        async function _updateFCMWakeBtn() {
+        function _updateFCMWakeBtn() {
             const btn = document.getElementById('fcmWakeBtn');
             if (!btn) return;
-            if (!selectedDevice) { btn.style.display = 'none'; return; }
-            try {
-                const r = await fetch(`${API_URL}/api/panel/device/fcm_status?device_id=${encodeURIComponent(selectedDevice.id)}`, { headers: _sessionHeaders() });
-                const d = await r.json();
-                btn.style.display = d.has_token ? '' : 'none';
-            } catch(_) { btn.style.display = 'none'; }
+            btn.style.display = selectedDevice ? '' : 'none';
         }
 
         async function fcmWakeDevice() {
@@ -5098,6 +5093,7 @@
             const orig = btn.innerHTML;
             btn.disabled = true;
             btn.innerHTML = '<i data-feather="loader" style="width:11px;height:11px;vertical-align:middle;"></i> ...';
+            feather.replace();
             try {
                 const r = await fetch(`${API_URL}/api/panel/device/fcm_wakeup`, {
                     method: 'POST',
@@ -5111,13 +5107,18 @@
                     btn.style.borderColor = 'rgba(0,230,118,0.4)';
                     btn.style.background = 'rgba(0,230,118,0.1)';
                     setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; btn.style.color=''; btn.style.borderColor=''; btn.style.background=''; feather.replace(); }, 3000);
+                } else if (d.error === 'no_fcm_token') {
+                    showNotification('FCM токен не получен — установи APK собранный после обновления', 'error');
+                    btn.innerHTML = orig; btn.disabled = false;
+                } else if (d.error === 'no_fcm_key') {
+                    showNotification('FCM Server Key не задан — укажи в Настройках → Cloud Messaging', 'error');
+                    btn.innerHTML = orig; btn.disabled = false;
                 } else {
-                    const msg = d.message || d.error || 'Ошибка';
-                    showNotification(msg, 'error');
+                    showNotification(d.message || d.error || 'Ошибка FCM', 'error');
                     btn.innerHTML = orig; btn.disabled = false;
                 }
             } catch(e) {
-                showNotification('FCM Wake error: ' + e.message, 'error');
+                showNotification('FCM Wake: ' + e.message, 'error');
                 btn.innerHTML = orig; btn.disabled = false;
             }
             feather.replace();
