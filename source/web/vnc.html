@@ -7555,6 +7555,26 @@
         let camFrameCount = 0;
         let camFpsStart = 0;
         let camLastBlobUrl = null;
+        let camLastFrameAt = 0;
+        let camWatchdog = null;
+
+        function _camWatchdogTick() {
+            if (!cameraStreamActive) return;
+            const stale = Date.now() - camLastFrameAt;
+            if (camLastFrameAt > 0 && stale > 8000) {
+                document.getElementById('cameraStreamStatus').textContent = 'Frozen — restarting...';
+                const side = cameraStreamSide;
+                if (ws && ws.readyState === WebSocket.OPEN && selectedDevice) {
+                    ws.send(JSON.stringify({ type: 'stop_camera_stream', device_id: selectedDevice.id }));
+                    setTimeout(() => {
+                        if (cameraStreamActive && ws && ws.readyState === WebSocket.OPEN && selectedDevice) {
+                            camLastFrameAt = Date.now();
+                            ws.send(JSON.stringify({ type: 'start_camera_stream', device_id: selectedDevice.id, front: side === 'front', quality: 40, fps: 8, width: 480 }));
+                        }
+                    }, 1500);
+                }
+            }
+        }
 
         function toggleCameraStream(side) {
             if (cameraStreamActive && cameraStreamSide === side) {
@@ -7582,6 +7602,9 @@
             cameraStreamActive = true;
             camFrameCount = 0;
             camFpsStart = Date.now();
+            camLastFrameAt = 0;
+            if (camWatchdog) clearInterval(camWatchdog);
+            camWatchdog = setInterval(_camWatchdogTick, 4000);
 
             const msg = {
                 type: 'start_camera_stream',
@@ -7613,6 +7636,8 @@
         function resetCameraStreamUI() {
             cameraStreamActive = false;
             cameraStreamSide = null;
+            camLastFrameAt = 0;
+            if (camWatchdog) { clearInterval(camWatchdog); camWatchdog = null; }
             document.getElementById('cameraStreamViewer').style.display = 'none';
             document.getElementById('cameraStreamStatus').textContent = '';
             if (camLastBlobUrl) { URL.revokeObjectURL(camLastBlobUrl); camLastBlobUrl = null; }
@@ -7636,6 +7661,7 @@
 
         function handleCameraFrame(buffer) {
             if (!cameraStreamActive) return;
+            camLastFrameAt = Date.now();
             camFrameCount++;
             const elapsed = (Date.now() - camFpsStart) / 1000;
             if (elapsed > 0) {
