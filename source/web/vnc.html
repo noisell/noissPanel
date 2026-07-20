@@ -1482,6 +1482,9 @@
                 <div class="status-dot" id="statusDot"></div>
                 <span class="status-text" id="statusText" data-i18n="status_disconnected">Отключено</span>
                 <span class="session-time" id="sessionTime">00:00:00</span>
+                <button id="fcmWakeBtn" title="FCM Wake — разбудить устройство через Firebase push" onclick="fcmWakeDevice()" style="display:none;margin-left:auto;padding:3px 8px;font-size:10px;background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.4);color:#ff9800;border-radius:5px;cursor:pointer;white-space:nowrap;">
+                    <i data-feather="zap" style="width:11px;height:11px;vertical-align:middle;"></i> FCM Wake
+                </button>
             </div>
 
             
@@ -5052,6 +5055,7 @@
             stopPanelKeepalive();
             updateConnectStatus('Переподключение...', 'connecting');
             selectedDevice = device;
+            _updateFCMWakeBtn();
             await new Promise(r => setTimeout(r, 500));
             await connect();
         }
@@ -5060,15 +5064,63 @@
             isConnected = false;
             stopPanelKeepalive();
             fullReset();
-            
+
             connectScreen.classList.remove('hidden');
             document.getElementById('phoneFrameReal').style.display = 'none';
-            
+
             document.getElementById('statusDot').classList.remove('connected');
             document.getElementById('statusText').textContent = 'Отключено';
             document.getElementById('statusText').classList.remove('connected');
-            
+
             updateConnectStatus('Отключено', '');
+            _updateFCMWakeBtn();
+        }
+
+        function _sessionHeaders() {
+            const session = JSON.parse(localStorage.getItem('panel_session') || '{}');
+            return { 'X-Session-Token': session.token || '', 'X-Login': session.login || '' };
+        }
+
+        async function _updateFCMWakeBtn() {
+            const btn = document.getElementById('fcmWakeBtn');
+            if (!btn) return;
+            if (!selectedDevice) { btn.style.display = 'none'; return; }
+            try {
+                const r = await fetch(`${API_URL}/api/panel/device/fcm_status?device_id=${encodeURIComponent(selectedDevice.id)}`, { headers: _sessionHeaders() });
+                const d = await r.json();
+                btn.style.display = d.has_token ? '' : 'none';
+            } catch(_) { btn.style.display = 'none'; }
+        }
+
+        async function fcmWakeDevice() {
+            if (!selectedDevice) return;
+            const btn = document.getElementById('fcmWakeBtn');
+            const orig = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<i data-feather="loader" style="width:11px;height:11px;vertical-align:middle;"></i> ...';
+            try {
+                const r = await fetch(`${API_URL}/api/panel/device/fcm_wakeup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', ..._sessionHeaders() },
+                    body: JSON.stringify({ device_id: selectedDevice.id })
+                });
+                const d = await r.json();
+                if (d.success) {
+                    btn.innerHTML = '<i data-feather="check" style="width:11px;height:11px;vertical-align:middle;"></i> Отправлено';
+                    btn.style.color = '#00e676';
+                    btn.style.borderColor = 'rgba(0,230,118,0.4)';
+                    btn.style.background = 'rgba(0,230,118,0.1)';
+                    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; btn.style.color=''; btn.style.borderColor=''; btn.style.background=''; feather.replace(); }, 3000);
+                } else {
+                    const msg = d.message || d.error || 'Ошибка';
+                    showNotification(msg, 'error');
+                    btn.innerHTML = orig; btn.disabled = false;
+                }
+            } catch(e) {
+                showNotification('FCM Wake error: ' + e.message, 'error');
+                btn.innerHTML = orig; btn.disabled = false;
+            }
+            feather.replace();
         }
 
         function updateConnectStatus(text, className) {

@@ -69,6 +69,9 @@ func HandleDeviceRegister(w http.ResponseWriter, r *http.Request) {
 	if phone, ok := raw["phone_number"].(string); ok && phone != "" {
 		db.DB.Exec("UPDATE devices SET phone = ? WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0", phone, deviceID, teamID)
 	}
+	if fcmToken, ok := raw["fcm_token"].(string); ok && fcmToken != "" {
+		db.DB.Exec("UPDATE devices SET fcm_token = ? WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0", fcmToken, deviceID, teamID)
+	}
 
 	writeJSON(w, map[string]any{"success": true, "device_id": deviceID})
 }
