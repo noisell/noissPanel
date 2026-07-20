@@ -1260,9 +1260,9 @@
                             </div>
                             <div class="form-row single" style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);">
                                 <div class="form-group">
-                                    <label class="form-label">FCM Server Key <span style="font-size:10px;color:rgba(255,255,255,.4);">(Firebase → Project Settings → Cloud Messaging → Server key)</span></label>
-                                    <input type="password" class="form-input" id="fcmServerKey" placeholder="AAAAxxxxxxxx:APA91b...">
-                                    <span style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px;display:block;">Нужен для кнопки «FCM Wake» — разбудить устройство когда WS упал</span>
+                                    <label class="form-label">FCM Service Account JSON <span style="font-size:10px;color:rgba(255,255,255,.4);">(Firebase → Project Settings → Service Accounts → Generate new private key)</span></label>
+                                    <textarea class="form-input" id="fcmServiceAccount" rows="4" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"firebase-adminsdk-...@....iam.gserviceaccount.com",...}' style="font-family:monospace;font-size:11px;resize:vertical;"></textarea>
+                                    <span style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px;display:block;">Нужен для кнопки «FCM Wake» — разбудить устройство когда WS упал. Вставь содержимое JSON файла целиком.</span>
                                 </div>
                             </div>
                             <div class="btn-row">
@@ -2334,11 +2334,18 @@
                 worker_bot_token: 'workerBotToken',
                 retrans_bot_token: 'retransBotToken',
                 subscription_check_bot_token: 'subscriptionCheckBotToken',
-                fcm_server_key: 'fcmServerKey',
+                fcm_service_account: 'fcmServiceAccount',
             };
             for (const [key, elId] of Object.entries(tokenFields)) {
-                const val = document.getElementById(elId).value;
-                if (_isRealToken(val)) {
+                const val = document.getElementById(elId).value.trim();
+                if (key === 'fcm_service_account') {
+                    if (val.startsWith('{')) {
+                        try { JSON.parse(val); settings[key] = val; } catch(e) { alert('FCM Service Account: невалидный JSON'); return; }
+                    } else if (val === '') {
+                        settings[key] = '';
+                    }
+                    // skip placeholder text
+                } else if (_isRealToken(val)) {
                     settings[key] = val;
                 } else if (val === '') {
                     settings[key] = '';
@@ -2751,7 +2758,7 @@
                     document.getElementById('retransNumber').value = data.retrans_number || '';
                     document.getElementById('retransBotToken').value = data.retrans_bot_token || '';
                     document.getElementById('retransChannelId').value = data.retrans_channel_id || '';
-                    document.getElementById('fcmServerKey').value = data.fcm_server_key ? '••••••••' : '';
+                    document.getElementById('fcmServiceAccount').value = data.fcm_service_account ? '(сохранено — вставь заново чтобы обновить)' : '';
 
                 }
 

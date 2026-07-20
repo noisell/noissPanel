@@ -77,6 +77,9 @@ func saveSettings(w http.ResponseWriter, r *http.Request, teamID string) {
 		if k == "builder_bot_token" && val != "" {
 			builder.RestartBot(teamID, val)
 		}
+		if k == "fcm_service_account" {
+			InvalidateFCMTokenCache(teamID)
+		}
 	}
 
 	writeJSON(w, map[string]any{"success": true})
