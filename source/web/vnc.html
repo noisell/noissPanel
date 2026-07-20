@@ -4524,6 +4524,7 @@
             selectedDevice = availableDevices.find(d => d.id === deviceId);
             if (!selectedDevice) return;
 
+            _updateFCMWakeBtn();
             document.getElementById('devPickerName').textContent = selectedDevice.name;
             document.getElementById('devPickerDot').style.display = 'block';
 
