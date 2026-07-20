@@ -177,7 +177,9 @@ func (h *Hub) SendToDeviceIfTeam(deviceID, teamID string, msg map[string]any) bo
 func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		log.Printf("[WS] upgrade error: %v", err)
+		log.Printf("[WS] upgrade error path=%s remote=%s upgrade=%q connection=%q err=%v",
+			r.URL.Path, r.RemoteAddr,
+			r.Header.Get("Upgrade"), r.Header.Get("Connection"), err)
 		return
 	}
 	defer conn.Close()
@@ -545,9 +547,8 @@ func handlePanelMessage(pc *PanelConn, msg map[string]any) {
 		}
 
 	case "start_watching":
-		if send(deviceID, msg) {
-			pc.Watching = deviceID
-		}
+		pc.Watching = deviceID
+		send(deviceID, msg)
 		H.logPanelAction(pc, "vnc_start", deviceID, "")
 
 	case "stop_watching":
