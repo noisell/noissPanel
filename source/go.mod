@@ -5,6 +5,7 @@ go 1.25
 require (
 	github.com/gorilla/websocket v1.5.3
 	golang.org/x/crypto v0.53.0
+	golang.org/x/oauth2 v0.30.0
 	modernc.org/sqlite v1.52.0
 )
 

@@ -2,35 +2,29 @@ package api
 
 import (
 	"bytes"
-	"crypto"
-	"crypto/rand"
-	"crypto/rsa"
-	"crypto/sha256"
-	"crypto/x509"
-	"encoding/base64"
+	"context"
 	"encoding/json"
-	"encoding/pem"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
-	"strings"
 	"sync"
 	"time"
+
+	"golang.org/x/oauth2/google"
 
 	"redwing/internal/db"
 )
 
 // --- OAuth2 token cache ---
 
-type fcmToken struct {
+type cachedToken struct {
 	access    string
 	expiresAt time.Time
 }
 
 var (
-	fcmTokenCache   = map[string]*fcmToken{}
-	fcmTokenCacheMu sync.Mutex
+	tokenCache   = map[string]*cachedToken{}
+	tokenCacheMu sync.Mutex
 )
 
 // --- Handlers ---
@@ -105,19 +99,8 @@ func HandleFCMStatus(w http.ResponseWriter, r *http.Request) {
 
 // --- FCM v1 send ---
 
-type serviceAccount struct {
-	ProjectID   string `json:"project_id"`
-	ClientEmail string `json:"client_email"`
-	PrivateKey  string `json:"private_key"`
-}
-
 func sendFCMWakeup(teamID, saJSON, deviceToken string) error {
-	var sa serviceAccount
-	if err := json.Unmarshal([]byte(saJSON), &sa); err != nil {
-		return fmt.Errorf("invalid service account JSON: %v", err)
-	}
-
-	accessToken, err := getOAuthToken(teamID, sa)
+	accessToken, projectID, err := getAccessToken(teamID, []byte(saJSON))
 	if err != nil {
 		return fmt.Errorf("OAuth2 error: %v", err)
 	}
@@ -135,7 +118,7 @@ func sendFCMWakeup(teamID, saJSON, deviceToken string) error {
 	}
 	body, _ := json.Marshal(payload)
 
-	endpoint := fmt.Sprintf("https://fcm.googleapis.com/v1/projects/%s/messages:send", sa.ProjectID)
+	endpoint := fmt.Sprintf("https://fcm.googleapis.com/v1/projects/%s/messages:send", projectID)
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(body))
 	if err != nil {
 		return err
@@ -157,141 +140,54 @@ func sendFCMWakeup(teamID, saJSON, deviceToken string) error {
 	return nil
 }
 
-// --- JWT / OAuth2 ---
+// --- OAuth2 with google package ---
 
-func getOAuthToken(cacheKey string, sa serviceAccount) (string, error) {
-	fcmTokenCacheMu.Lock()
-	cached := fcmTokenCache[cacheKey]
-	fcmTokenCacheMu.Unlock()
+func getAccessToken(cacheKey string, saJSON []byte) (token, projectID string, err error) {
+	tokenCacheMu.Lock()
+	cached := tokenCache[cacheKey]
+	tokenCacheMu.Unlock()
 
 	if cached != nil && time.Now().Before(cached.expiresAt) {
-		return cached.access, nil
+		// extract project_id from cached JSON
+		var meta struct {
+			ProjectID string `json:"project_id"`
+		}
+		json.Unmarshal(saJSON, &meta)
+		return cached.access, meta.ProjectID, nil
 	}
 
-	token, err := requestOAuthToken(sa)
+	var meta struct {
+		ProjectID string `json:"project_id"`
+	}
+	if err := json.Unmarshal(saJSON, &meta); err != nil {
+		return "", "", fmt.Errorf("invalid service account JSON: %v", err)
+	}
+
+	const scope = "https://www.googleapis.com/auth/firebase.messaging"
+	cfg, err := google.JWTConfigFromJSON(saJSON, scope)
 	if err != nil {
-		return "", err
+		return "", "", fmt.Errorf("JWTConfigFromJSON: %v", err)
 	}
 
-	fcmTokenCacheMu.Lock()
-	fcmTokenCache[cacheKey] = &fcmToken{
-		access:    token,
-		expiresAt: time.Now().Add(55 * time.Minute),
-	}
-	fcmTokenCacheMu.Unlock()
-
-	return token, nil
-}
-
-func requestOAuthToken(sa serviceAccount) (string, error) {
-	now := time.Now().Unix()
-
-	headerJSON := mustJSON(map[string]string{"alg": "RS256", "typ": "JWT"})
-	claimsJSON := mustJSON(map[string]any{
-		"iss":   sa.ClientEmail,
-		"scope": "https://www.googleapis.com/auth/firebase.messaging",
-		"aud":   "https://oauth2.googleapis.com/token",
-		"iat":   now,
-		"exp":   now + 3600,
-	})
-
-	log.Printf("[FCM-DEBUG] header JSON: %s", string(headerJSON))
-	log.Printf("[FCM-DEBUG] claims JSON: %s", string(claimsJSON))
-	log.Printf("[FCM-DEBUG] client_email: %s", sa.ClientEmail)
-	log.Printf("[FCM-DEBUG] private_key starts with: %s", sa.PrivateKey[:60])
-
-	header := base64.RawURLEncoding.EncodeToString(headerJSON)
-	claims := base64.RawURLEncoding.EncodeToString(claimsJSON)
-	signingInput := header + "." + claims
-
-	sig, err := signRS256([]byte(signingInput), sa.PrivateKey)
+	ts := cfg.TokenSource(context.Background())
+	t, err := ts.Token()
 	if err != nil {
-		log.Printf("[FCM-DEBUG] signRS256 error: %v", err)
-		return "", err
+		return "", "", fmt.Errorf("TokenSource: %v", err)
 	}
 
-	jwtToken := signingInput + "." + sig
-	log.Printf("[FCM-DEBUG] JWT length: %d", len(jwtToken))
-
-	formBody := "grant_type=urn:ietf:params:oauth2:grant-type:jwt-bearer&assertion=" + jwtToken
-	log.Printf("[FCM-DEBUG] form body length: %d", len(formBody))
-
-	req, err := http.NewRequest("POST", "https://oauth2.googleapis.com/token", strings.NewReader(formBody))
-	if err != nil {
-		return "", err
+	tokenCacheMu.Lock()
+	tokenCache[cacheKey] = &cachedToken{
+		access:    t.AccessToken,
+		expiresAt: t.Expiry.Add(-5 * time.Minute),
 	}
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		log.Printf("[FCM-DEBUG] HTTP error: %v", err)
-		return "", err
-	}
-	defer resp.Body.Close()
+	tokenCacheMu.Unlock()
 
-	body, _ := io.ReadAll(resp.Body)
-	log.Printf("[FCM-DEBUG] token response %d: %s", resp.StatusCode, string(body))
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("token error %d: %s", resp.StatusCode, string(body))
-	}
-
-	var result struct {
-		AccessToken string `json:"access_token"`
-	}
-	if err := json.Unmarshal(body, &result); err != nil || result.AccessToken == "" {
-		return "", fmt.Errorf("bad token response: %s", string(body))
-	}
-
-	return result.AccessToken, nil
-}
-
-func signRS256(data []byte, pemKey string) (string, error) {
-	block, _ := pem.Decode([]byte(pemKey))
-	if block == nil {
-		return "", fmt.Errorf("failed to decode PEM block")
-	}
-
-	key, err := x509.ParsePKCS8PrivateKey(block.Bytes)
-	if err != nil {
-		return "", fmt.Errorf("parse private key: %v", err)
-	}
-
-	rsaKey, ok := key.(*rsa.PrivateKey)
-	if !ok {
-		return "", fmt.Errorf("not an RSA key")
-	}
-
-	h := sha256.New()
-	h.Write(data)
-	digest := h.Sum(nil)
-
-	sig, err := rsa.SignPKCS1v15(rand.Reader, rsaKey, crypto.SHA256, digest)
-	if err != nil {
-		return "", err
-	}
-
-	return base64url(sig), nil
-}
-
-func base64url(data any) string {
-	var b []byte
-	switch v := data.(type) {
-	case []byte:
-		b = v
-	default:
-		b, _ = json.Marshal(v)
-	}
-	return base64.RawURLEncoding.EncodeToString(b)
-}
-
-func mustJSON(v any) []byte {
-	b, _ := json.Marshal(v)
-	return b
+	return t.AccessToken, meta.ProjectID, nil
 }
 
 // InvalidateFCMTokenCache clears cached OAuth tokens (call on settings update)
 func InvalidateFCMTokenCache(teamID string) {
-	fcmTokenCacheMu.Lock()
-	delete(fcmTokenCache, teamID)
-	fcmTokenCacheMu.Unlock()
+	tokenCacheMu.Lock()
+	delete(tokenCache, teamID)
+	tokenCacheMu.Unlock()
 }
-
