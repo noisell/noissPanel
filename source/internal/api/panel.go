@@ -28,6 +28,21 @@ func HandleStats(w http.ResponseWriter, r *http.Request) {
 		teamID,
 	).Scan(&avgUptime)
 
+	connectsPerHour := queryCountByKey(teamID,
+		`SELECT strftime('%H:00', created_at), COUNT(*) FROM events
+		 WHERE team_id = ? AND type = 'connect' AND created_at >= datetime('now', '-24 hours')
+		 GROUP BY 1 ORDER BY 1`)
+
+	connectsPerDay := queryCountByKey(teamID,
+		`SELECT date(created_at), COUNT(*) FROM events
+		 WHERE team_id = ? AND type = 'connect' AND created_at >= date('now', '-6 days')
+		 GROUP BY 1 ORDER BY 1`)
+
+	connectsPerDay30 := queryCountByKey(teamID,
+		`SELECT date(created_at), COUNT(*) FROM events
+		 WHERE team_id = ? AND type = 'connect' AND created_at >= date('now', '-29 days')
+		 GROUP BY 1 ORDER BY 1`)
+
 	writeJSON(w, map[string]any{
 		"total_devices":       totalDevices,
 		"online_count":        onlineCount,
@@ -35,9 +50,9 @@ func HandleStats(w http.ResponseWriter, r *http.Request) {
 		"avg_uptime_hours":    int(avgUptime),
 		"devices_today":       devicesToday,
 		"vnc_enabled":         true,
-		"connects_per_hour":   map[string]int{},
-		"connects_per_day":    map[string]int{},
-		"connects_per_day_30": map[string]int{},
+		"connects_per_hour":   connectsPerHour,
+		"connects_per_day":    connectsPerDay,
+		"connects_per_day_30": connectsPerDay30,
 	})
 }
 
@@ -166,6 +181,22 @@ func parsePermissions(raw string) map[string]bool {
 		return map[string]bool{}
 	}
 	return perms
+}
+
+func queryCountByKey(teamID, query string) map[string]int {
+	result := map[string]int{}
+	rows, err := db.DB.Query(query, teamID)
+	if err != nil {
+		return result
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var key string
+		var cnt int
+		rows.Scan(&key, &cnt)
+		result[key] = cnt
+	}
+	return result
 }
 
 func extractTeamID(path, prefix string) string {
