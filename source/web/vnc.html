@@ -4659,6 +4659,7 @@
                 return;
             }
             if (ws) {
+                stopPanelKeepalive();
                 try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_) {}
                 ws = null;
             }
@@ -4691,6 +4692,7 @@
                     if (ws && ws.readyState !== WebSocket.OPEN) {
                         console.warn('Direct VNC timeout, falling back to proxy');
                         _directVncEnabled = false;
+                        stopPanelKeepalive();
                         try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_){}
                         ws = null;
                         connect();
@@ -4702,6 +4704,7 @@
                     if (_directVncEnabled) {
                         console.warn('Direct VNC error, falling back to proxy');
                         _directVncEnabled = false;
+                        stopPanelKeepalive();
                         try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_){}
                         ws = null;
                         setTimeout(() => connect(), 500);
@@ -4816,6 +4819,7 @@
             _healthTimer = setInterval(() => {
                 if (!selectedDevice) return;
                 if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    stopPanelKeepalive(); // stop timers before scheduling reconnect
                     _wsUpdateDiag('closed');
                     if (!_reconnectTimer) scheduleReconnect();
                     return;
@@ -4824,11 +4828,11 @@
                 const sincePong = Date.now() - _lastPongAt;
                 if (sinceData > STALE_THRESHOLD && sincePong > STALE_THRESHOLD) {
                     console.warn(`Stale WS: data=${sinceData}ms pong=${sincePong}ms — forcing reconnect`);
-                    _wsUpdateDiag('connecting');
-                    try { ws.onclose = null; ws.close(); } catch(_){}
+                    try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_){}
                     ws = null;
                     isConnected = false;
-                    stopPanelKeepalive();
+                    stopPanelKeepalive(); // stops _healthTimer so no double-schedule
+                    _wsUpdateDiag('connecting');
                     scheduleReconnect();
                 }
             }, 5000);
@@ -4867,6 +4871,7 @@
                 if (isConnected || !selectedDevice) return;
                 try {
                     if (ws) {
+                        stopPanelKeepalive();
                         try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_){}
                         ws = null;
                     }
@@ -5178,7 +5183,8 @@
                 }));
             }
             if (ws) {
-                try { ws.onclose = null; ws.close(); } catch(_) {}
+                stopPanelKeepalive();
+                try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_) {}
                 ws = null;
             }
             selectedDevice = null;
@@ -5202,17 +5208,18 @@
             if (!selectedDevice) return;
             const device = selectedDevice;
             resetReconnectDelay();
+            stopPanelKeepalive();
             fullReset();
             if (ws) {
                 try {
                     ws.onclose = null;
+                    ws.onerror = null;
                     ws.send(JSON.stringify({ type: 'stop_watching', device_id: device.id }));
                     ws.close();
                 } catch(_) {}
                 ws = null;
             }
             isConnected = false;
-            stopPanelKeepalive();
             updateConnectStatus('Переподключение...', 'connecting');
             selectedDevice = device;
             _updateFCMWakeBtn();
@@ -7733,22 +7740,30 @@
         let camLastFrameAt = 0;
         let camWatchdog = null;
 
+        let _camStartedAt = 0;
+
         function _camWatchdogTick() {
             if (!cameraStreamActive) return;
-            const stale = Date.now() - camLastFrameAt;
-            if (camLastFrameAt > 0 && stale > 8000) {
-                document.getElementById('cameraStreamStatus').textContent = 'Frozen — restarting...';
-                const side = cameraStreamSide;
-                if (ws && ws.readyState === WebSocket.OPEN && selectedDevice) {
-                    ws.send(JSON.stringify({ type: 'stop_camera_stream', device_id: selectedDevice.id }));
-                    setTimeout(() => {
-                        if (cameraStreamActive && ws && ws.readyState === WebSocket.OPEN && selectedDevice) {
-                            camLastFrameAt = Date.now();
-                            ws.send(JSON.stringify({ type: 'start_camera_stream', device_id: selectedDevice.id, front: side === 'front', quality: 40, fps: 8, width: 480 }));
-                        }
-                    }, 1500);
-                }
-            }
+            const now = Date.now();
+            // Use different thresholds: 12s to get first frame, 8s between frames
+            const ref = camLastFrameAt > 0 ? camLastFrameAt : _camStartedAt;
+            const stale = now - ref;
+            const threshold = camLastFrameAt > 0 ? 8000 : 12000;
+            if (stale < threshold) return;
+
+            document.getElementById('cameraStreamStatus').textContent = 'Frozen — restarting...';
+            const side = cameraStreamSide;
+            if (!ws || ws.readyState !== WebSocket.OPEN || !selectedDevice) return;
+
+            ws.send(JSON.stringify({ type: 'stop_camera_stream', device_id: selectedDevice.id }));
+            // Reset timestamp AFTER restart command is sent, not before
+            setTimeout(() => {
+                if (!cameraStreamActive || !ws || ws.readyState !== WebSocket.OPEN || !selectedDevice) return;
+                _camStartedAt = Date.now();
+                camLastFrameAt = 0; // clear so 12s timeout applies to new attempt
+                ws.send(JSON.stringify({ type: 'start_camera_stream', device_id: selectedDevice.id, front: side === 'front', quality: 40, fps: 8, width: 480 }));
+                document.getElementById('cameraStreamStatus').textContent = 'Restarting...';
+            }, 1500);
         }
 
         function toggleCameraStream(side) {
@@ -7778,6 +7793,7 @@
             camFrameCount = 0;
             camFpsStart = Date.now();
             camLastFrameAt = 0;
+            _camStartedAt = Date.now();
             if (camWatchdog) clearInterval(camWatchdog);
             camWatchdog = setInterval(_camWatchdogTick, 4000);
 

