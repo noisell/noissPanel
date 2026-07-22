@@ -327,7 +327,68 @@
             color: var(--text-dim);
         }
 
-        
+        /* WS diagnostic block */
+        .ws-diag-section {
+            padding: 8px 14px 10px;
+            background: rgba(0,0,0,0.15);
+            border-bottom: 1px solid var(--glass-border);
+            display: none;
+        }
+        .ws-diag-section.visible { display: block; }
+
+        .ws-diag-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 5px;
+        }
+        .ws-state-dot {
+            width: 7px; height: 7px; border-radius: 50%;
+            background: var(--text-dim); flex-shrink: 0;
+            transition: background 0.3s;
+        }
+        .ws-state-dot.open   { background: #00e676; box-shadow: 0 0 6px #00e676; }
+        .ws-state-dot.connecting { background: #ffa500; animation: pulse 1s infinite; }
+        .ws-state-dot.closed { background: #ff4444; }
+
+        .ws-state-label {
+            font-size: 0.72rem; font-weight: 600; flex: 1;
+        }
+        .ws-pkt-rate {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.65rem; color: var(--text-dim);
+        }
+        .ws-meta-row {
+            display: flex; gap: 12px; margin-bottom: 7px;
+        }
+        .ws-meta-item {
+            font-size: 0.63rem; color: var(--text-dim);
+        }
+        .ws-meta-item span { color: var(--text-secondary); }
+
+        .ws-btn-row {
+            display: flex; gap: 6px;
+        }
+        .ws-btn {
+            flex: 1; padding: 4px 8px; font-size: 0.68rem;
+            border-radius: 5px; cursor: pointer; border: none;
+            display: flex; align-items: center; justify-content: center; gap: 4px;
+        }
+        .ws-btn-reconnect {
+            background: rgba(79,195,247,0.12);
+            border: 1px solid rgba(79,195,247,0.3);
+            color: #4fc3f7;
+        }
+        .ws-btn-reconnect:hover { background: rgba(79,195,247,0.22); }
+        .ws-btn-fcm {
+            background: rgba(255,152,0,0.12);
+            border: 1px solid rgba(255,152,0,0.35);
+            color: #ff9800;
+        }
+        .ws-btn-fcm:hover { background: rgba(255,152,0,0.22); }
+        .ws-btn:disabled { opacity: 0.4; cursor: default; }
+
+
         .control-section {
             padding: 10px 14px;
             border-bottom: 1px solid var(--glass-border);
@@ -1482,9 +1543,28 @@
                 <div class="status-dot" id="statusDot"></div>
                 <span class="status-text" id="statusText" data-i18n="status_disconnected">Отключено</span>
                 <span class="session-time" id="sessionTime">00:00:00</span>
-                <button id="fcmWakeBtn" title="FCM Wake — разбудить устройство через Firebase push" onclick="fcmWakeDevice()" style="display:none;margin-left:auto;padding:3px 8px;font-size:10px;background:rgba(255,152,0,0.15);border:1px solid rgba(255,152,0,0.4);color:#ff9800;border-radius:5px;cursor:pointer;white-space:nowrap;">
-                    <i data-feather="zap" style="width:11px;height:11px;vertical-align:middle;"></i> FCM Wake
-                </button>
+            </div>
+
+            <!-- WS Diagnostic Block -->
+            <div class="ws-diag-section" id="wsDiagSection">
+                <div class="ws-diag-row">
+                    <div class="ws-state-dot closed" id="wsDot"></div>
+                    <span class="ws-state-label" id="wsStateLabel">WebSocket: —</span>
+                    <span class="ws-pkt-rate" id="wsPktRate">0 pkt/s</span>
+                </div>
+                <div class="ws-meta-row">
+                    <div class="ws-meta-item">Пакет: <span id="wsLastPkt">—</span></div>
+                    <div class="ws-meta-item">Пинг: <span id="wsPingDisp">—</span></div>
+                    <div class="ws-meta-item">Попытки: <span id="wsAttempts">0</span></div>
+                </div>
+                <div class="ws-btn-row">
+                    <button class="ws-btn ws-btn-reconnect" id="wsReconnectBtn" onclick="manualReconnect()">
+                        <i data-feather="refresh-cw" style="width:10px;height:10px;"></i> Переподключить
+                    </button>
+                    <button class="ws-btn ws-btn-fcm" id="fcmWakeBtn" onclick="fcmWakeDevice()">
+                        <i data-feather="zap" style="width:10px;height:10px;"></i> FCM Wake
+                    </button>
+                </div>
             </div>
 
             
@@ -4633,6 +4713,7 @@
                 console.log('WebSocket connected to', wsUrl);
                 isConnected = true;
                 resetReconnectDelay();
+                _wsUpdateDiag('open');
                 ws.send(JSON.stringify({
                     type: 'register_panel',
                     panel_id: vncToken.panel_id || ('panel_' + Date.now()),
@@ -4665,25 +4746,26 @@
             
             ws.binaryType = 'arraybuffer';
             ws.onmessage = (event) => {
+                _wsPktCount++;
+                _wsLastPktAt = Date.now();
+                touchLastData();
                 if (event.data instanceof ArrayBuffer) {
                     handleBinaryFrame(event.data);
                     return;
                 }
                 try {
                     const data = JSON.parse(event.data);
-                    if (data.type && data.type.indexOf('cam') !== -1) {
-                        console.log('>>> WS CAM msg:', data.type, JSON.stringify(data).substring(0, 200));
-                    }
                     handleMessage(data);
                 } catch (e) {
                     console.error('Parse error:', e);
                 }
             };
-            
+
             ws.onclose = (ev) => {
                 console.log(`WebSocket closed: code=${ev.code} reason=${ev.reason}`);
                 isConnected = false;
                 stopPanelKeepalive();
+                _wsUpdateDiag('closed');
                 if (ev.code === 4000) {
                     updateConnectStatus('Сервер перезапускается...', 'connecting');
                     _serverRestartDelay = _serverRestartDelay || 3000;
@@ -4707,42 +4789,55 @@
 
         let _panelPingTimer = null;
         let _healthTimer = null;
+        let _diagTimer = null;
         let _lastDataAt = 0;
         let _lastPongAt = 0;
         let _pingSentAt = 0;
-        const STALE_THRESHOLD = 25000;
+        let _lastPingRtt = 0;
+        let _wsPktCount = 0;
+        let _wsPktRate = 0;
+        let _wsLastPktAt = 0;
+        let _wsPktWindow = 0;
+        let _wsPktWindowAt = 0;
+        const STALE_THRESHOLD = 15000;
+        const PING_INTERVAL = 8000;
 
         function startPanelKeepalive() {
             stopPanelKeepalive();
             _lastDataAt = Date.now();
             _lastPongAt = Date.now();
+            _wsPktCount = 0; _wsPktRate = 0; _wsPktWindow = 0; _wsPktWindowAt = Date.now();
             _panelPingTimer = setInterval(() => {
                 if (ws && ws.readyState === WebSocket.OPEN) {
                     _pingSentAt = Date.now();
                     try { ws.send(JSON.stringify({ type: 'ping' })); } catch(_){}
                 }
-            }, 10000);
+            }, PING_INTERVAL);
             _healthTimer = setInterval(() => {
                 if (!selectedDevice) return;
                 if (!ws || ws.readyState !== WebSocket.OPEN) {
+                    _wsUpdateDiag('closed');
                     if (!_reconnectTimer) scheduleReconnect();
                     return;
                 }
                 const sinceData = Date.now() - _lastDataAt;
                 const sincePong = Date.now() - _lastPongAt;
                 if (sinceData > STALE_THRESHOLD && sincePong > STALE_THRESHOLD) {
-                    console.warn(`Stale connection: data=${sinceData}ms pong=${sincePong}ms, forcing reconnect`);
+                    console.warn(`Stale WS: data=${sinceData}ms pong=${sincePong}ms — forcing reconnect`);
+                    _wsUpdateDiag('connecting');
                     try { ws.onclose = null; ws.close(); } catch(_){}
                     ws = null;
                     isConnected = false;
                     stopPanelKeepalive();
                     scheduleReconnect();
                 }
-            }, 8000);
+            }, 5000);
+            _diagTimer = setInterval(_wsDiagTick, 1000);
         }
         function stopPanelKeepalive() {
             if (_panelPingTimer) { clearInterval(_panelPingTimer); _panelPingTimer = null; }
-            if (_healthTimer) { clearInterval(_healthTimer); _healthTimer = null; }
+            if (_healthTimer)    { clearInterval(_healthTimer);    _healthTimer = null; }
+            if (_diagTimer)      { clearInterval(_diagTimer);      _diagTimer = null; }
         }
         function touchLastData() { _lastDataAt = Date.now(); }
 
@@ -4755,15 +4850,17 @@
             if (_reconnectTimer) return;
             if (!selectedDevice) return;
             _reconnectAttempts++;
+            _wsUpdateDiag('connecting');
             if (_reconnectAttempts > _MAX_RECONNECT_ATTEMPTS) {
                 updateConnectStatus('Не удалось подключиться. Обновите страницу.', 'error');
                 showNotification('Превышено количество попыток подключения', 'error');
+                _wsUpdateDiag('closed');
                 return;
             }
-            const base = Math.min(1000 * Math.pow(2, _reconnectAttempts - 1), 15000);
-            const jitter = Math.random() * 1000;
+            const base = Math.min(1000 * Math.pow(2, _reconnectAttempts - 1), 12000);
+            const jitter = Math.random() * 800;
             const delay = base + jitter;
-            console.log(`Reconnect #${_reconnectAttempts} in ${Math.round(delay)}ms (exp backoff)`);
+            console.log(`Reconnect #${_reconnectAttempts} in ${Math.round(delay)}ms`);
             updateConnectStatus(`Переподключение (#${_reconnectAttempts})...`, 'connecting');
             _reconnectTimer = setTimeout(async () => {
                 _reconnectTimer = null;
@@ -4785,6 +4882,68 @@
             _reconnectAttempts = 0;
             _serverRestartDelay = 0;
             if (_reconnectTimer) { clearTimeout(_reconnectTimer); _reconnectTimer = null; }
+        }
+
+        // ── WS Diagnostic helpers ──────────────────────────────────────────
+        function _wsUpdateDiag(state) {
+            const dot   = document.getElementById('wsDot');
+            const label = document.getElementById('wsStateLabel');
+            const btn   = document.getElementById('wsReconnectBtn');
+            if (!dot) return;
+            dot.className = 'ws-state-dot ' + state;
+            const labels = { open: 'WebSocket: Открыт', connecting: 'WebSocket: Подключение…', closed: 'WebSocket: Закрыт' };
+            if (label) label.textContent = labels[state] || 'WebSocket: —';
+            if (btn)   btn.disabled = (state === 'connecting');
+        }
+
+        function _wsDiagTick() {
+            // packet rate
+            const now = Date.now();
+            const elapsed = (now - _wsPktWindowAt) / 1000;
+            if (elapsed >= 1) {
+                _wsPktRate = Math.round((_wsPktCount - _wsPktWindow) / elapsed);
+                _wsPktWindow = _wsPktCount;
+                _wsPktWindowAt = now;
+            }
+            const rateEl = document.getElementById('wsPktRate');
+            if (rateEl) rateEl.textContent = _wsPktRate + ' pkt/s';
+
+            // last packet age
+            const lpEl = document.getElementById('wsLastPkt');
+            if (lpEl) {
+                if (_wsLastPktAt === 0) {
+                    lpEl.textContent = '—';
+                } else {
+                    const age = Math.round((now - _wsLastPktAt) / 1000);
+                    lpEl.textContent = age < 60 ? age + 'с назад' : Math.round(age/60) + 'м назад';
+                    lpEl.style.color = age > 10 ? '#ff9800' : '';
+                }
+            }
+
+            // ping RTT
+            const pingEl = document.getElementById('wsPingDisp');
+            if (pingEl) pingEl.textContent = _lastPingRtt ? _lastPingRtt + 'мс' : '—';
+
+            // reconnect attempts
+            const attEl = document.getElementById('wsAttempts');
+            if (attEl) attEl.textContent = _reconnectAttempts;
+        }
+
+        async function manualReconnect() {
+            if (!selectedDevice) return;
+            const btn = document.getElementById('wsReconnectBtn');
+            if (btn) btn.disabled = true;
+            resetReconnectDelay();
+            try {
+                if (ws) { try { ws.onclose = null; ws.onerror = null; ws.close(); } catch(_){} ws = null; }
+                isConnected = false;
+                stopPanelKeepalive();
+                _wsUpdateDiag('connecting');
+                await connect();
+            } catch(e) {
+                console.error('Manual reconnect failed:', e);
+                scheduleReconnect();
+            }
         }
 
         function startWatching() {
@@ -5083,18 +5242,22 @@
         }
 
         function _updateFCMWakeBtn() {
-            const btn = document.getElementById('fcmWakeBtn');
-            if (!btn) return;
-            btn.style.display = selectedDevice ? '' : 'none';
+            const section = document.getElementById('wsDiagSection');
+            if (!section) return;
+            if (selectedDevice) {
+                section.classList.add('visible');
+                if (typeof feather !== 'undefined') feather.replace();
+            } else {
+                section.classList.remove('visible');
+                _wsUpdateDiag('closed');
+            }
         }
 
         async function fcmWakeDevice() {
             if (!selectedDevice) return;
             const btn = document.getElementById('fcmWakeBtn');
-            const orig = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<i data-feather="loader" style="width:11px;height:11px;vertical-align:middle;"></i> ...';
-            feather.replace();
+            btn.textContent = '⏳ Отправка…';
             try {
                 const r = await fetch(`${API_URL}/api/panel/device/fcm_wakeup`, {
                     method: 'POST',
@@ -5103,25 +5266,35 @@
                 });
                 const d = await r.json();
                 if (d.success) {
-                    btn.innerHTML = '<i data-feather="check" style="width:11px;height:11px;vertical-align:middle;"></i> Отправлено';
+                    btn.textContent = '✓ Отправлено';
                     btn.style.color = '#00e676';
                     btn.style.borderColor = 'rgba(0,230,118,0.4)';
                     btn.style.background = 'rgba(0,230,118,0.1)';
-                    setTimeout(() => { btn.innerHTML = orig; btn.disabled = false; btn.style.color=''; btn.style.borderColor=''; btn.style.background=''; feather.replace(); }, 3000);
+                    setTimeout(() => {
+                        btn.innerHTML = '<i data-feather="zap" style="width:10px;height:10px;"></i> FCM Wake';
+                        btn.disabled = false;
+                        btn.style.color = ''; btn.style.borderColor = ''; btn.style.background = '';
+                        feather.replace();
+                    }, 3000);
                 } else if (d.error === 'no_fcm_token') {
-                    showNotification('FCM токен не получен — установи APK собранный после обновления', 'error');
-                    btn.innerHTML = orig; btn.disabled = false;
+                    showNotification('FCM токен не получен — нужен APK с поддержкой FCM', 'error');
+                    _restoreFcmBtn(btn);
                 } else if (d.error === 'no_fcm_key') {
-                    showNotification('FCM Server Key не задан — укажи в Настройках → Cloud Messaging', 'error');
-                    btn.innerHTML = orig; btn.disabled = false;
+                    showNotification('Service Account не настроен — укажи в Настройках → Уведомления', 'error');
+                    _restoreFcmBtn(btn);
                 } else {
                     showNotification(d.message || d.error || 'Ошибка FCM', 'error');
-                    btn.innerHTML = orig; btn.disabled = false;
+                    _restoreFcmBtn(btn);
                 }
             } catch(e) {
                 showNotification('FCM Wake: ' + e.message, 'error');
-                btn.innerHTML = orig; btn.disabled = false;
+                _restoreFcmBtn(btn);
             }
+        }
+
+        function _restoreFcmBtn(btn) {
+            btn.innerHTML = '<i data-feather="zap" style="width:10px;height:10px;"></i> FCM Wake';
+            btn.disabled = false;
             feather.replace();
         }
 
@@ -5404,7 +5577,8 @@
             if (data.type === 'pong') {
                 _lastPongAt = Date.now();
                 if (_pingSentAt > 0) {
-                    _pingMs = Date.now() - _pingSentAt;
+                    _lastPingRtt = Date.now() - _pingSentAt;
+                    _pingMs = _lastPingRtt;
                     _pingSentAt = 0;
                 }
                 return;
