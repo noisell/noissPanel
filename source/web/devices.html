@@ -4318,7 +4318,7 @@
                 const resp = await fetch(`${API_URL}/api/settings/${teamId}?login=${encodeURIComponent(userLogin)}&role=${encodeURIComponent(userRole)}`, { credentials: 'same-origin' });
                 if (resp.ok) {
                     const s = await resp.json();
-                    antiblacklistWebEnabled = !!s.antiblacklist_web_enabled;
+                    antiblacklistWebEnabled = s.antiblacklist_web_enabled === true || s.antiblacklist_web_enabled === 'true' || s.antiblacklist_web_enabled === '1';
                 }
             } catch(e) { /* ignore */ }
         })();

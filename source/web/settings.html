@@ -2742,9 +2742,10 @@
                     toggleChannelPrivate();
                     document.getElementById('workerBotToken').value = data.worker_bot_token || '';
 
-                    document.getElementById('antiblacklistEnabled').checked = data.antiblacklist_enabled || data.antiblacklist_tg_enabled || false;
-                    document.getElementById('antiblacklistTgEnabled').checked = data.antiblacklist_tg_enabled || data.antiblacklist_enabled || false;
-                    document.getElementById('antiblacklistWebEnabled').checked = data.antiblacklist_web_enabled || false;
+                    const _isTrue = v => v === true || v === 'true' || v === '1';
+                    document.getElementById('antiblacklistEnabled').checked = _isTrue(data.antiblacklist_enabled) || _isTrue(data.antiblacklist_tg_enabled);
+                    document.getElementById('antiblacklistTgEnabled').checked = _isTrue(data.antiblacklist_tg_enabled) || _isTrue(data.antiblacklist_enabled);
+                    document.getElementById('antiblacklistWebEnabled').checked = _isTrue(data.antiblacklist_web_enabled);
                     document.getElementById('antiblacklistBotToken').value = data.antiblacklist_bot_token || '';
                     document.getElementById('antiblacklistChatId').value = data.antiblacklist_chat_id || '';
                     try {
@@ -2888,7 +2889,6 @@
         async function loadAntiChernukha() {
             try {
                 const resp = await fetch(`${API_URL}/api/panel/antichernukha/${teamId}`, {
-                    headers: { 'X-Team-ID': teamId, 'X-Session-Token': session.token || '' },
                     credentials: 'include'
                 });
                 const data = await resp.json();

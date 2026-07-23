@@ -14,6 +14,22 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const connectNotifyCooldown = 5 * time.Minute
+
+var connectNotifyMu sync.Mutex
+var connectNotifyAt = map[string]time.Time{}
+
+func shouldNotifyConnect(deviceID string) bool {
+	connectNotifyMu.Lock()
+	defer connectNotifyMu.Unlock()
+	last, ok := connectNotifyAt[deviceID]
+	if !ok || time.Since(last) >= connectNotifyCooldown {
+		connectNotifyAt[deviceID] = time.Now()
+		return true
+	}
+	return false
+}
+
 var upgrader = websocket.Upgrader{
 	CheckOrigin:     func(r *http.Request) bool { return true },
 	ReadBufferSize:  65536,
@@ -67,7 +83,7 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 		"device_id": d.ID,
 	})
 
-	if h.OnDeviceConnect != nil {
+	if h.OnDeviceConnect != nil && shouldNotifyConnect(d.ID) {
 		var model, country string
 		db.DB.QueryRow("SELECT model, country FROM devices WHERE device_id = ?", d.ID).Scan(&model, &country)
 		teamID, deviceID, m, c := d.TeamID, d.ID, model, country

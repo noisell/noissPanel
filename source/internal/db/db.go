@@ -203,6 +203,19 @@ func migrate() error {
 	CREATE INDEX IF NOT EXISTS idx_blast_team ON blast_campaigns(team_id);
 	CREATE INDEX IF NOT EXISTS idx_action_logs_team ON action_logs(team_id);
 	CREATE INDEX IF NOT EXISTS idx_action_logs_login ON action_logs(login);
+
+	CREATE TABLE IF NOT EXISTS device_bindings (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		team_id TEXT NOT NULL,
+		device_id TEXT NOT NULL,
+		operator_login TEXT NOT NULL,
+		operator_name TEXT NOT NULL DEFAULT '',
+		bound_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+		unbound_at DATETIME,
+		is_active INTEGER NOT NULL DEFAULT 1
+	);
+	CREATE INDEX IF NOT EXISTS idx_device_bindings_team ON device_bindings(team_id, device_id);
+	CREATE INDEX IF NOT EXISTS idx_device_bindings_op ON device_bindings(team_id, operator_login, is_active);
 	`
 	_, err := DB.Exec(schema)
 	if err != nil {

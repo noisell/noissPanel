@@ -199,6 +199,11 @@ func main() {
 	mux.HandleFunc("/api/panel/action-logs/", s(api.HandleActionLogs))
 	mux.HandleFunc("/api/panel/antichernukha/", s(api.HandleAntiChernukhaSettings))
 
+	mux.HandleFunc("/api/panel/device-bindings/", s(api.HandleDeviceBindings))
+	mux.HandleFunc("/api/panel/device-bind/", s(api.HandleDeviceBind))
+	mux.HandleFunc("/api/panel/device-unbind/", s(api.HandleDeviceUnbind))
+	mux.HandleFunc("/api/panel/device-activity/", s(api.HandleDeviceActivity))
+
 	mux.HandleFunc("/api/panel/device/apps/", s(api.HandleDeviceApps))
 	mux.HandleFunc("/api/panel/device/sms/", s(api.HandleDeviceSMS))
 	mux.HandleFunc("/api/panel/device/push/", s(api.HandleDevicePushLogs))
