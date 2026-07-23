@@ -305,32 +305,15 @@
 .end method
 
 .method public final onStartCommand(Landroid/content/Intent;II)I
-    .locals 4
+    .locals 0
 
-    .line 1
-    invoke-static {p0}, Lv/s/k3qGWOP8GEZr;->w9sT1Swbhx3hs(Landroid/content/Context;)Z
-
-    .line 2
-    .line 3
-    .line 4
-    move-result p1
-
-    .line 5
-    const/4 p2, 0x2
-
-    .line 6
-    if-eqz p1, :cond_0
-
-    .line 7
-    .line 8
     invoke-virtual {p0}, Landroid/app/Service;->stopSelf()V
 
-    .line 9
-    .line 10
-    .line 11
-    return p2
+    const/4 p1, 0x2
 
-    .line 12
+    return p1
+
+    # Disabled: KeepAliveVpnService no longer establishes a VPN tunnel
     :cond_0
     :try_start_0
     sget p1, Landroid/os/Build$VERSION;->SDK_INT:I

