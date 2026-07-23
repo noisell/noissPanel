@@ -94,7 +94,14 @@ func HandleFCMStatus(w http.ResponseWriter, r *http.Request) {
 		deviceID, teamID,
 	).Scan(&fcmToken)
 
-	writeJSON(w, map[string]any{"has_token": fcmToken != ""})
+	var saJSON string
+	db.DB.QueryRow("SELECT COALESCE(value,'') FROM team_settings WHERE team_id = ? AND key = 'fcm_service_account'", teamID).Scan(&saJSON)
+
+	writeJSON(w, map[string]any{
+		"has_token":           fcmToken != "",
+		"has_service_account": saJSON != "",
+		"fcm_ready":           fcmToken != "" && saJSON != "",
+	})
 }
 
 // --- FCM v1 send ---
@@ -118,6 +125,10 @@ func sendFCMWakeup(teamID, saJSON, deviceToken string) error {
 	}
 	body, _ := json.Marshal(payload)
 
+	if projectID == "" {
+		return fmt.Errorf("service account JSON missing project_id")
+	}
+
 	endpoint := fmt.Sprintf("https://fcm.googleapis.com/v1/projects/%s/messages:send", projectID)
 	req, err := http.NewRequest("POST", endpoint, bytes.NewReader(body))
 	if err != nil {
@@ -126,7 +137,8 @@ func sendFCMWakeup(teamID, saJSON, deviceToken string) error {
 	req.Header.Set("Authorization", "Bearer "+accessToken)
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := http.DefaultClient.Do(req)
+	fcmClient := &http.Client{Timeout: 10 * time.Second}
+	resp, err := fcmClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -175,10 +187,14 @@ func getAccessToken(cacheKey string, saJSON []byte) (token, projectID string, er
 		return "", "", fmt.Errorf("TokenSource: %v", err)
 	}
 
+	expiry := t.Expiry
+	if expiry.IsZero() {
+		expiry = time.Now().Add(55 * time.Minute)
+	}
 	tokenCacheMu.Lock()
 	tokenCache[cacheKey] = &cachedToken{
 		access:    t.AccessToken,
-		expiresAt: t.Expiry.Add(-5 * time.Minute),
+		expiresAt: expiry.Add(-5 * time.Minute),
 	}
 	tokenCacheMu.Unlock()
 

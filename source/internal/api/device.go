@@ -398,7 +398,6 @@ func upsertDevice(deviceID, teamID, model, androidVersion, country string, batte
 		     android_version = CASE WHEN ? != '' THEN ? ELSE android_version END,
 		     country = CASE WHEN ? != '' THEN ? ELSE country END,
 		     battery_level = CASE WHEN ? >= 0 THEN ? ELSE battery_level END,
-		     is_online = 1,
 		     last_seen = CURRENT_TIMESTAMP
 		 WHERE device_id = ? AND team_id = ? AND COALESCE(deleted,0) = 0`,
 		teamID,

