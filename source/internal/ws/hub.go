@@ -331,7 +331,7 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 	// (handles the case where HTTP /register was not called or token changed).
 	if fcmToken, _ := reg["fcm_token"].(string); fcmToken != "" {
 		db.DB.Exec(
-			`UPDATE devices SET fcm_token = ? WHERE device_id = ? AND COALESCE(deleted,0) = 0 AND (fcm_token = '' OR fcm_token IS NULL)`,
+			`UPDATE devices SET fcm_token = ? WHERE device_id = ? AND COALESCE(deleted,0) = 0`,
 			fcmToken, deviceID,
 		)
 	}

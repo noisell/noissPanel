@@ -1705,77 +1705,9 @@
     move-result p1
 
     .line 691
-    if-eqz p1, :cond_26
+    goto :cond_26
 
-    .line 692
-    .line 693
-    :try_start_3
-    invoke-static {p0}, Landroid/net/VpnService;->prepare(Landroid/content/Context;)Landroid/content/Intent;
-
-    .line 694
-    .line 695
-    .line 696
-    move-result-object p1
-
-    nop
-
-    nop
-
-    .line 697
-    if-eqz p1, :cond_25
-
-    nop
-
-    nop
-
-    .line 698
-    .line 699
-    const-string v0, "000F0077004E008900F300B700DB00A900240036006D00B700DE00FF00D100A8002D0065005E008900E400FF00D600AE0022007A00540080"
-
-    .line 700
-    .line 701
-    invoke-static {v0}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-
-    .line 702
-    .line 703
-    .line 704
-    const/16 v0, 0x67
-
-    .line 705
-    .line 706
-    invoke-virtual {p0, p1, v0}, Landroid/app/Activity;->startActivityForResult(Landroid/content/Intent;I)V
-
-    .line 707
-    .line 708
-    .line 709
-    goto/16 :goto_6
-
-    .line 710
-    :catch_3
-    move-exception p1
-
-    .line 711
-    goto :goto_5
-
-    .line 712
-    :cond_25
-    const-string p1, "00150046007500C700F100B300C000A200220072004200C700F300B000DC00B400260078004F008200F4"
-
-    .line 713
-    .line 714
-    invoke-static {p1}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-
-    .line 715
-    .line 716
-    .line 717
-    invoke-virtual {p0}, Landroid/app/Activity;->finishAndRemoveTask()V
-    :try_end_3
-    .catch Ljava/lang/Exception; {:try_start_3 .. :try_end_3} :catch_3
-
-    .line 718
-    .line 719
-    .line 720
-    goto :goto_6
+    # Disabled: VPN permission request removed — prevented eviction of user's existing VPN
 
     .line 721
     :goto_5

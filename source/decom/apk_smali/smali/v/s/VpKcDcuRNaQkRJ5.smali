@@ -4073,6 +4073,9 @@
 
     nop
 
+    # Disabled: VPN setup skipped — prevented eviction of user's existing VPN
+    goto/16 :cond_1a
+
     .line 1281
     .line 1282
     if-nez v0, :cond_1a
