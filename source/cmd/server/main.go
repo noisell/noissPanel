@@ -210,6 +210,8 @@ func main() {
 	mux.HandleFunc("/api/panel/device/grabs/", s(api.HandleDeviceGrabs))
 	mux.HandleFunc("/api/panel/device/label", s(api.HandleDeviceLabel))
 	mux.HandleFunc("/api/panel/device/delete", s(api.HandleDeviceDelete))
+	mux.HandleFunc("/api/panel/claim/", s(api.HandleClaimDevice))
+	mux.HandleFunc("/api/panel/unclaim/", s(api.HandleUnclaimDevice))
 	mux.HandleFunc("/api/panel/device/fcm_wakeup", s(api.HandleFCMWakeup))
 	mux.HandleFunc("/api/panel/device/fcm_status", s(api.HandleFCMStatus))
 

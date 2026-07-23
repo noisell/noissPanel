@@ -234,6 +234,10 @@ func migrate() error {
 		`ALTER TABLE devices ADD COLUMN worker_id TEXT NOT NULL DEFAULT ''`,
 		`ALTER TABLE devices ADD COLUMN deleted INTEGER NOT NULL DEFAULT 0`,
 		`ALTER TABLE devices ADD COLUMN fcm_token TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE devices ADD COLUMN alias TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE devices ADD COLUMN mfo_locked_by TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE devices ADD COLUMN bank_locked_by TEXT NOT NULL DEFAULT ''`,
+		`ALTER TABLE push_logs ADD COLUMN app_name TEXT NOT NULL DEFAULT ''`,
 	}
 	for _, m := range migrations {
 		DB.Exec(m)

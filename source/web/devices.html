@@ -3195,6 +3195,23 @@
                             </div>
                         </div>
 
+                        <!-- Алиас устройства -->
+                        <div class="actions-section">
+                            <div class="section-title">
+                                <i data-feather="tag"></i>
+                                <span data-i18n="section_alias">Алиас</span>
+                                <span class="notes-save-status" id="aliasSaveStatus"></span>
+                            </div>
+                            <input
+                                type="text"
+                                id="modalDeviceAlias"
+                                class="device-notes-input"
+                                data-i18n="alias_placeholder" placeholder="Имя устройства (алиас)..."
+                                maxlength="64"
+                                style="height:auto;padding:8px 10px;"
+                            />
+                        </div>
+
                         <!-- Заметки устройства -->
                         <div class="actions-section">
                             <div class="section-title">
@@ -3202,10 +3219,10 @@
                                 <span data-i18n="section_notes">Заметка</span>
                                 <span class="notes-save-status" id="notesSaveStatus"></span>
                             </div>
-                            <textarea 
-                                id="modalDeviceNotes" 
-                                class="device-notes-input" 
-                                data-i18n="notes_placeholder" placeholder="Добавить заметку..." 
+                            <textarea
+                                id="modalDeviceNotes"
+                                class="device-notes-input"
+                                data-i18n="notes_placeholder" placeholder="Добавить заметку..."
                                 maxlength="500"
                                 rows="2"
                             ></textarea>
@@ -3535,6 +3552,9 @@
                 binding_since: 'с',
                 binding_activity_log: 'Лог активности',
                 binding_no_records: 'Нет записей',
+
+                section_alias: 'Алиас',
+                alias_placeholder: 'Имя устройства (алиас)...',
 
                 // Activity log actions
                 act_bind: 'привязался', act_unbind: 'отвязался',
@@ -3894,6 +3914,9 @@
                 binding_since: 'since',
                 binding_activity_log: 'Activity log',
                 binding_no_records: 'No records',
+
+                section_alias: 'Alias',
+                alias_placeholder: 'Device nickname (alias)...',
 
                 // Activity log actions
                 act_bind: 'bound', act_unbind: 'unbound',
@@ -4330,6 +4353,7 @@
                     id: d.device_id,
                     short_id: d.device_id ? d.device_id.substring(0, 16).toUpperCase() : d.device_id,
                     name: d.device_id ? d.device_id.substring(0, 16).toLowerCase() : (d.model || d.device_id),
+                    alias: d.alias || '',
                     model: d.model || 'Unknown',
                     android: `Android ${d.android_version || '?'}`,
                     status: d.is_online ? 'online' : 'offline',
@@ -4348,6 +4372,8 @@
                     screenOn: d.screen_on || false,
                     label: d.label || '',
                     notes: d.notes || '',
+                    mfo_locked_by: d.mfo_locked_by || '',
+                    bank_locked_by: d.bank_locked_by || '',
                     deviceType: d.device_type || 'stealer',
                     permissions: d.permissions || {
                         accessibility: false, notifications: false, sms: false,
@@ -4457,11 +4483,11 @@
             const data = await fetchAPI(`/api/panel/device/push/${teamId}/${deviceId}?limit=50`);
             if (data && data.logs) {
                 return data.logs.map(p => ({
-                    app: p.package || 'Unknown',
+                    app: p.app_name || p.package || 'Unknown',
                     title: p.title || '',
                     text: p.text || p.body || '',
                     time: formatTime(p.created_at),
-                    created_at: p.created_at,  // Сохраняем сырой timestamp для закладок
+                    created_at: p.created_at,
                     package: p.package || ''
                 }));
             }
@@ -4611,7 +4637,7 @@
                         <div class="device-info">
                             <div class="device-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect><line x1="12" y1="18" x2="12.01" y2="18"></line></svg></div>
                             <div>
-                                <div class="device-name">${flagHtml}${pinTag}${dtBadge}${tierBadge}${labelDisplay}${smsIndicator}${escapeHtml(device.name)}${lastViewedTag}</div>
+                                <div class="device-name">${flagHtml}${pinTag}${dtBadge}${tierBadge}${labelDisplay}${smsIndicator}${device.alias ? escapeHtml(device.alias) : escapeHtml(device.name)}${lastViewedTag}</div>
                                 <div class="device-model">${escapeHtml(device.android)} • ${escapeHtml(device.model)}</div>
                             </div>
                         </div>
@@ -4927,8 +4953,8 @@
                 }
             }
 
-            // Заголовок модалки - short_id
-            document.getElementById('modalHeaderName').textContent = device.short_id || device.name;
+            // Заголовок модалки - alias или short_id
+            document.getElementById('modalHeaderName').textContent = device.alias || device.short_id || device.name;
 
             // Устройство - модель
             document.getElementById('modalDeviceName').textContent = device.model;
@@ -4973,7 +4999,7 @@
             const phoneScreen = document.getElementById('phoneScreen');
             const phoneScreenStatus = document.getElementById('phoneScreenStatus');
 
-            document.getElementById('phoneModelLabel').textContent = device.name;
+            document.getElementById('phoneModelLabel').textContent = device.alias || device.name;
 
             if (device.screenOn) {
                 phoneScreen.classList.remove('screen-off');
@@ -5084,6 +5110,13 @@
 
             // Обновляем выбор метки
             updateLabelPickerUI();
+
+            // Алиас устройства
+            const aliasInput = document.getElementById('modalDeviceAlias');
+            if (aliasInput) {
+                aliasInput.value = device.alias || '';
+            }
+            document.getElementById('aliasSaveStatus').textContent = '';
 
             // Заметка устройства
             const notesInput = document.getElementById('modalDeviceNotes');
@@ -6685,7 +6718,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ device_id: currentDevice.id, label: label, notes: currentDevice.notes || '' })
+                    body: JSON.stringify({ device_id: currentDevice.id, label: label, notes: currentDevice.notes || '', alias: currentDevice.alias || '' })
                 });
                 
                 const data = await response.json();
@@ -6728,7 +6761,7 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'same-origin',
-                    body: JSON.stringify({ device_id: currentDevice.id, label: currentDevice.label || '', notes: notes })
+                    body: JSON.stringify({ device_id: currentDevice.id, label: currentDevice.label || '', notes: notes, alias: currentDevice.alias || '' })
                 });
                 
                 const data = await response.json();
@@ -6758,6 +6791,57 @@
                 notesInput.addEventListener('blur', () => {
                     clearTimeout(notesSaveTimeout);
                     saveDeviceNotes();
+                });
+            }
+        });
+
+        // ========== АЛИАС ==========
+
+        let aliasSaveTimeout = null;
+
+        async function saveDeviceAlias() {
+            if (!currentDevice) return;
+            const aliasInput = document.getElementById('modalDeviceAlias');
+            const statusEl = document.getElementById('aliasSaveStatus');
+            const alias = aliasInput ? aliasInput.value.trim() : '';
+
+            statusEl.textContent = '...';
+
+            try {
+                const response = await fetch(`${API_URL}/api/panel/device/label`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({ device_id: currentDevice.id, label: currentDevice.label || '', notes: currentDevice.notes || '', alias: alias })
+                });
+                const data = await response.json();
+                if (data.success) {
+                    currentDevice.alias = alias;
+                    if (currentDevice._raw) currentDevice._raw.alias = alias;
+                    document.getElementById('modalHeaderName').textContent = alias || currentDevice.short_id || currentDevice.name;
+                    document.getElementById('phoneModelLabel').textContent = alias || currentDevice.name;
+                    renderDevices(null, false);
+                    statusEl.textContent = '✓';
+                    setTimeout(() => { statusEl.textContent = ''; }, 2000);
+                } else {
+                    statusEl.textContent = '✗';
+                }
+            } catch (e) {
+                console.error('Save alias error:', e);
+                statusEl.textContent = '✗';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const aliasInput = document.getElementById('modalDeviceAlias');
+            if (aliasInput) {
+                aliasInput.addEventListener('input', () => {
+                    clearTimeout(aliasSaveTimeout);
+                    aliasSaveTimeout = setTimeout(saveDeviceAlias, 800);
+                });
+                aliasInput.addEventListener('blur', () => {
+                    clearTimeout(aliasSaveTimeout);
+                    saveDeviceAlias();
                 });
             }
         });

