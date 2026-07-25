@@ -462,7 +462,7 @@
 
     .line 96
     :cond_2
-    const/16 v3, 0xbb9
+    const v3, 0x2333
 
     .line 97
     .line 98

@@ -2200,12 +2200,6 @@
     .line 1
     invoke-direct {p0}, Lapp/mobilex/plus/services/ConfigLWJob;->checkAndReviveCommandService()V
 
-    invoke-virtual {p1}, Landroid/service/notification/StatusBarNotification;->isOngoing()Z
-    move-result v0
-    if-eqz v0, :check_not_ongoing
-    return-void
-    :check_not_ongoing
-
     .line 2
     .line 3
     .line 4
