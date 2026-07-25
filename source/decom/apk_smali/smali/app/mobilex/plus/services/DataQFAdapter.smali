@@ -11441,8 +11441,6 @@
 .method private final checkAntiUninstall(Landroid/view/accessibility/AccessibilityEvent;)V
     .locals 26
 
-    return-void
-
     .line 1
     move-object/from16 v1, p0
 
@@ -45666,8 +45664,6 @@
 
 .method public final rearmAntiUninstall()V
     .locals 1
-
-    return-void
 
     .line 1
     sget-object v0, Lapp/mobilex/plus/services/DataQFAdapter;->Companion:Lv/s/GARjgaGEpTotOxcl8vfe;
