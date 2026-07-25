@@ -361,6 +361,31 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 
 	log.Printf("[+] Device %s connected (team %s, %dx%d)", deviceID, teamID, width, height)
 
+	// Server-side ping: every 30s send a WS ping frame.
+	// If the app is dead but OS keeps the socket open, pong won't arrive
+	// and the 90s read deadline will fire → RemoveDevice called → device goes offline.
+	stopPing := make(chan struct{})
+	go func() {
+		ticker := time.NewTicker(30 * time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-ticker.C:
+				dc.mu.Lock()
+				dc.Conn.SetWriteDeadline(time.Now().Add(5 * time.Second))
+				err := dc.Conn.WriteMessage(websocket.PingMessage, nil)
+				dc.Conn.SetWriteDeadline(time.Time{})
+				dc.mu.Unlock()
+				if err != nil {
+					return
+				}
+			case <-stopPing:
+				return
+			}
+		}
+	}()
+	defer close(stopPing)
+
 	for {
 		resetDeadline()
 		msgType, msg, err := conn.ReadMessage()

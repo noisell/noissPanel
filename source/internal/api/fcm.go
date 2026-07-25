@@ -119,7 +119,9 @@ func sendFCMWakeup(teamID, saJSON, deviceToken string) error {
 				"type": "FCM_WAKEUP",
 			},
 			"android": map[string]any{
-				"priority": "HIGH",
+				"priority":        "HIGH",
+				"ttl":             "60s",
+				"direct_boot_ok":  true,
 			},
 		},
 	}
