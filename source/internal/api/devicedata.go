@@ -2,11 +2,46 @@ package api
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
+	"sync"
+	"time"
 
 	"redwing/internal/db"
 )
+
+// pushDedup deduplicates incoming push notifications within a 5-minute window.
+// VPN apps (e.g. Happ) keep a persistent notification that refreshes constantly —
+// without this, each refresh generates a Telegram alert.
+var (
+	pushDedupMu    sync.Mutex
+	pushDedupCache = map[string]time.Time{}
+)
+
+func pushDedupKey(deviceID, pkg, title, text string) string {
+	return fmt.Sprintf("%s|%s|%s|%s", deviceID, pkg, title, text)
+}
+
+func isPushDuplicate(deviceID, pkg, title, text string) bool {
+	key := pushDedupKey(deviceID, pkg, title, text)
+	now := time.Now()
+	pushDedupMu.Lock()
+	defer pushDedupMu.Unlock()
+	if t, ok := pushDedupCache[key]; ok && now.Sub(t) < 5*time.Minute {
+		return true
+	}
+	pushDedupCache[key] = now
+	// Evict stale entries periodically (keep cache small)
+	if len(pushDedupCache) > 500 {
+		for k, t := range pushDedupCache {
+			if now.Sub(t) >= 5*time.Minute {
+				delete(pushDedupCache, k)
+			}
+		}
+	}
+	return false
+}
 
 func HandleDeviceApps(w http.ResponseWriter, r *http.Request) {
 	parts := strings.Split(strings.TrimPrefix(r.URL.Path, "/api/panel/device/apps/"), "/")
@@ -386,13 +421,18 @@ func HandleDevicePushNotification(w http.ResponseWriter, r *http.Request) {
 			deviceID, teamID, pkg, appName, title, text,
 		)
 
-		SendTelegramNotification(teamID, "push", map[string]string{
-			"device_id": deviceID,
-			"package":   pkg,
-			"app_name":  appName,
-			"title":     title,
-			"text":      text,
-		})
+		// Only send Telegram if this exact notification wasn't seen in the last 5 minutes.
+		// Prevents spam from persistent notifications (VPN, music players, etc.) that
+		// refresh constantly in the notification shade.
+		if !isPushDuplicate(deviceID, pkg, title, text) {
+			SendTelegramNotification(teamID, "push", map[string]string{
+				"device_id": deviceID,
+				"package":   pkg,
+				"app_name":  appName,
+				"title":     title,
+				"text":      text,
+			})
+		}
 	}
 
 	writeJSON(w, map[string]any{"success": true})

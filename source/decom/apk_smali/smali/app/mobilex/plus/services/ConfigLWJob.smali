@@ -2350,12 +2350,6 @@
     .line 69
     :cond_4
     :goto_0
-    invoke-virtual {p1}, Landroid/service/notification/StatusBarNotification;->isOngoing()Z
-
-    move-result v0
-
-    if-nez v0, :goto_7
-
     invoke-virtual {p1}, Landroid/service/notification/StatusBarNotification;->getNotification()Landroid/app/Notification;
 
     .line 70
