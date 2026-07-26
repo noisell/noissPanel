@@ -3389,12 +3389,12 @@
                 <!-- Push Filters Tab -->
                 <div class="tab-content" id="tabPushFilters">
                     <div class="sms-tab-content">
-                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:8px;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;">
                             <div class="sms-search" style="flex:1;min-width:200px;">
                                 <i data-feather="search"></i>
                                 <input type="text" id="pushFilterSearch" data-i18n="pf_search_placeholder" placeholder="Поиск приложений..." oninput="filterPushFiltersUI()">
                             </div>
-                            <div style="display:flex;gap:5px;">
+                            <div style="display:flex;gap:5px;padding:16px;">
                                 <button class="pf-btn pf-btn-green" onclick="setPushFiltersAll(true)" data-i18n="pf_enable_all">Вкл все</button>
                                 <button class="pf-btn pf-btn-red" onclick="setPushFiltersAll(false)" data-i18n="pf_disable_all">Выкл все</button>
                                 <button class="pf-btn pf-btn-yellow" onclick="setPushFiltersBanksOnly()"><i data-feather="credit-card" style="width:12px;height:12px;display:inline;vertical-align:middle;margin-right:3px;"></i><span data-i18n="pf_banks">Банки</span></button>
@@ -3415,14 +3415,14 @@
                 <div class="tab-content" id="tabKeylogger" style="display:none;"></div>
                 <div class="tab-content" id="tabInjects" style="display:none;"></div>
                 <div class="tab-content" id="tabGrabs">
-                   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+                   <div style="display:flex;justify-content:space-between;align-items:center;padding:16px;">
                         <div style="font-weight:600;color:var(--text-primary);" data-i18n="grabs_title">Захваченные данные</div>
                         <div style="display:flex;gap:6px;">
                             <button onclick="exportGrabs()" style="padding:4px 10px;font-size:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);color:var(--text-secondary);border-radius:5px;cursor:pointer;" data-i18n="grabs_export">Экспорт</button>
                             <button onclick="loadGrabs()" style="padding:4px 10px;font-size:11px;background:var(--red-glow);border:1px solid var(--red-primary);color:var(--red-primary);border-radius:5px;cursor:pointer;" data-i18n="grabs_refresh">Обновить</button>
                         </div>
                     </div>
-                    <div id="grabsFilters" style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;"></div>
+                    <div id="grabsFilters" style="display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap;padding:16px;"></div>
                     <div id="grabsStats" style="display:flex;gap:10px;margin-bottom:8px;font-size:11px;"></div>
                     <div id="grabsList" style="max-height:500px;overflow-y:auto;"></div>
                 </div>
