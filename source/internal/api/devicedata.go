@@ -363,16 +363,24 @@ func HandleDevicePushNotification(w http.ResponseWriter, r *http.Request) {
 	if teamID != "" {
 		teamID = ResolveDeviceTeam(teamID)
 	}
-	pkg, _ := req["package"].(string)
+	// APK sends "package_name" and "app_name" (resolved via getApplicationLabel)
+	pkg, _ := req["package_name"].(string)
+	if pkg == "" {
+		pkg, _ = req["package"].(string) // fallback for older APK builds
+	}
 	title, _ := req["title"].(string)
 	text, _ := req["text"].(string)
+	appName, _ := req["app_name"].(string)
 
 	if teamID == "" && deviceID != "" {
 		db.DB.QueryRow("SELECT COALESCE(team_id,'') FROM devices WHERE device_id = ?", deviceID).Scan(&teamID)
 	}
 
+	if appName == "" {
+		appName = appDisplayName(pkg, "")
+	}
+
 	if deviceID != "" {
-		appName := appDisplayName(pkg, "")
 		db.DB.Exec(
 			"INSERT INTO push_logs (device_id, team_id, package, app_name, title, text) VALUES (?, ?, ?, ?, ?, ?)",
 			deviceID, teamID, pkg, appName, title, text,
