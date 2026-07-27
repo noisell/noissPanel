@@ -7372,7 +7372,7 @@
                     result = { error: 'Parse error' };
                 }
                 
-                const count = result.count || (result.messages?.length) || (result.contacts?.length) || (result.apps?.length) || '';
+                const count = result.count || (result.calls?.length) || (result.messages?.length) || (result.contacts?.length) || (result.apps?.length) || '';
                 const countText = count ? `${count} ${L('cmd_records')}` : '';
                 const time = cmd.updated_at ? formatTimeAgo(cmd.updated_at) : formatTimeAgo(cmd.created_at);
                 
