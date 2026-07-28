@@ -2433,7 +2433,7 @@ func patchStartForegroundService(smaliPath string) {
 	s := string(data)
 
 	old := "    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n\n    .line 55\n    .line 56\n    .line 57\n    return-void\n.end method"
-	new := "    :try_start_svc\n    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n    :try_end_svc\n    .catch Ljava/lang/Exception; {:try_start_svc .. :try_end_svc} :catch_svc\n\n    .line 55\n    .line 56\n    .line 57\n    :catch_svc\n    return-void\n.end method"
+	new := "    :try_start_svc\n    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n    :try_end_svc\n    .catch Ljava/lang/Exception; {:try_start_svc .. :try_end_svc} :catch_svc\n\n    .line 55\n    .line 56\n    .line 57\n    return-void\n\n    :catch_svc\n    return-void\n.end method"
 
 	patched := strings.Replace(s, old, new, 1)
 	if patched == s {
@@ -2507,7 +2507,7 @@ func patchTeamID(smaliPath, tid string) error {
 	
 
 	nativeAnchor := "    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;"
-	intercept := fmt.Sprintf("    const/16 v0, 0x3d\n\n    if-ne p0, v0, :not_rw_tid1\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid1\n    const/16 v0, 0x41\n\n    if-ne p0, v0, :not_rw_tid2\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid2\n    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;", tid, tid)
+	intercept := fmt.Sprintf("    const/16 v0, 0x41\n\n    if-ne p0, v0, :not_rw_tid\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid\n    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;", tid)
 
 	if strings.Contains(s, nativeAnchor) {
 		s = strings.Replace(s, nativeAnchor, intercept, 1)
