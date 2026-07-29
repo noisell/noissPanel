@@ -1,1 +1,0 @@
-{"dark_mode": true, "notifications": true, "sync": true}
