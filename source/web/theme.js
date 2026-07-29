@@ -118,7 +118,7 @@
             'position:fixed;top:0;right:-340px;width:320px;height:100%;z-index:99999;' +
             'background:var(--bg-card);border-left:1px solid var(--border-color);' +
             'box-shadow:-4px 0 24px rgba(0,0,0,0.25);transition:right .25s ease;' +
-            'overflow-y:auto;font-family:inherit;color:var(--text-white);';
+            'overflow-y:auto;font-family:Inter,sans-serif;color:var(--text-white);';
         panel.innerHTML = widgetHTML(prefs);
 
         var gear = document.createElement('button');
@@ -156,7 +156,7 @@
                        'border:1px solid ' + (active ? 'var(--red-primary)' : 'var(--border-color)') + ';' +
                        'background:' + (active ? 'var(--red-glow)' : 'transparent') + ';' +
                        'color:' + (active ? 'var(--red-primary)' : 'var(--text-gray)') + ';' +
-                       'border-radius:6px;cursor:pointer;transition:all .15s;font-family:inherit;">' + o.label + '</button>';
+                       'border-radius:6px;cursor:pointer;transition:all .15s;font-family:Inter,sans-serif;">' + o.label + '</button>';
             }).join('');
             return '<div style="display:flex;gap:4px;">' + btns + '</div>';
         }
@@ -201,7 +201,7 @@
             '</div>' +
 
             '<button id="rwThemeReset" style="width:100%;padding:8px;font-size:12px;font-weight:600;border:1px solid var(--border-color);' +
-                'background:transparent;color:var(--text-gray);border-radius:6px;cursor:pointer;font-family:inherit;transition:all .15s;">' +
+                'background:transparent;color:var(--text-gray);border-radius:6px;cursor:pointer;font-family:Inter,sans-serif;transition:all .15s;">' +
                 'Reset to defaults' +
             '</button>' +
         '</div>';
