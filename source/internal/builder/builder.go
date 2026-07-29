@@ -1888,8 +1888,9 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 	if err := cmd.Run(); err != nil {
 		return nil, "", fmt.Errorf("apktool build failed: %v", err)
 	}
+	os.WriteFile("/tmp/panel_debug.apk", func() []byte { d, _ := os.ReadFile(outputAPK); return d }(), 0644)
 
-	
+
 	alignedAPK := filepath.Join(tmpDir, "aligned.apk")
 	if err := zipalign4(outputAPK, alignedAPK); err != nil {
 		return nil, "", fmt.Errorf("zipalign failed: %v", err)
