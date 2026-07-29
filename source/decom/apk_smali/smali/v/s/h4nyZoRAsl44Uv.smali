@@ -2320,17 +2320,17 @@
     goto/16 :goto_d
 
     :cond_overlay_check
-    const-string v8, "002C0060005E009500FC00BE00CB"
+    const-string v0, "002C0060005E009500FC00BE00CB"
 
-    invoke-static {v8}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+    invoke-static {v0}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
 
-    move-result-object v8
+    move-result-object v0
 
-    invoke-static {v7, v8}, Lv/s/okc5AGRjqrud84oM6d;->w9sT1Swbhx3hs(Ljava/lang/Object;Ljava/lang/Object;)Z
+    invoke-static {v7, v0}, Lv/s/okc5AGRjqrud84oM6d;->w9sT1Swbhx3hs(Ljava/lang/Object;Ljava/lang/Object;)Z
 
-    move-result v8
+    move-result v0
 
-    if-eqz v8, :cond_0
+    if-eqz v0, :cond_0
 
     goto/16 :goto_0
 
