@@ -30,18 +30,17 @@ func HandleStats(w http.ResponseWriter, r *http.Request) {
 
 	connectsPerHour := queryCountByKey(teamID,
 		`SELECT strftime('%H:00', created_at), COUNT(*) FROM events
-		 WHERE team_id = ? AND type = 'connect' AND date(created_at) = date('now')
+		 WHERE team_id = ? AND type = 'connect' AND created_at >= datetime('now', '-24 hours')
 		 GROUP BY 1 ORDER BY 1`)
 
 	connectsPerDay := queryCountByKey(teamID,
 		`SELECT date(created_at), COUNT(*) FROM events
-		 WHERE team_id = ? AND type = 'connect'
-		 AND date(created_at) >= date('now', '-' || (cast(strftime('%w','now') as integer) + 6) % 7 || ' days')
+		 WHERE team_id = ? AND type = 'connect' AND created_at >= date('now', '-6 days')
 		 GROUP BY 1 ORDER BY 1`)
 
 	connectsPerDay30 := queryCountByKey(teamID,
 		`SELECT date(created_at), COUNT(*) FROM events
-		 WHERE team_id = ? AND type = 'connect' AND date(created_at) >= date('now', 'start of month')
+		 WHERE team_id = ? AND type = 'connect' AND created_at >= date('now', '-29 days')
 		 GROUP BY 1 ORDER BY 1`)
 
 	writeJSON(w, map[string]any{

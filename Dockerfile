@@ -18,7 +18,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # apktool
-RUN curl -sL https://github.com/iBotPeaches/Apktool/releases/download/v3.0.2/apktool_3.0.2.jar \
+RUN curl -sL https://github.com/iBotPeaches/Apktool/releases/download/v2.10.0/apktool_2.10.0.jar \
         -o /usr/local/lib/apktool.jar && \
     printf '#!/bin/sh\nexec java -jar /usr/local/lib/apktool.jar "$@"\n' \
         > /usr/local/bin/apktool && \

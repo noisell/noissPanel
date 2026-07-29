@@ -7,7 +7,7 @@
     <title>noissRat Panel</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="/theme.js?v=2"></script>
@@ -51,7 +51,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
             background: var(--bg-dark);
             color: var(--text-white);
             min-height: 100vh;
@@ -1329,7 +1329,7 @@
                         borderWidth: 1,
                         padding: 10,
                         displayColors: false,
-                        titleFont: { family: 'Inter', size: 11 },
+                        titleFont: { family: 'Exo 2', size: 11 },
                         bodyFont: { family: 'JetBrains Mono', size: 13, weight: 600 },
                         callbacks: {
                             label: function(ctx) { return ctx.parsed.y + ' ' + L('chart_tooltip'); }
@@ -1382,51 +1382,35 @@
         function updateChartData(stats, period) {
             if (!stats || !activityChart) return;
 
-            let source = {};
-            let keys = [];
-            let labels = [];
+            let source = null;
+            let labelFn = null;
             let titleText = L('chart_title');
-            const now = new Date();
 
             if (period === '24h') {
-                source = stats.connects_per_hour || {};
+                source = stats.connects_per_hour;
+                labelFn = (key) => key;
                 titleText = L('chart_title_24h');
-                for (let h = 0; h < 24; h++) {
-                    const key = String(h).padStart(2, '0') + ':00';
-                    keys.push(key);
-                    labels.push(key);
-                }
             } else if (period === '30d') {
-                source = stats.connects_per_day_30 || {};
+                source = stats.connects_per_day_30;
+                labelFn = (key) => {
+                    const d = new Date(key + 'T00:00:00');
+                    return `${d.getDate()}.${String(d.getMonth() + 1).padStart(2, '0')}`;
+                };
                 titleText = L('chart_title_30d');
-                const year = now.getFullYear();
-                const month = now.getMonth();
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                for (let d = 1; d <= daysInMonth; d++) {
-                    const key = `${year}-${String(month + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-                    keys.push(key);
-                    labels.push(String(d));
-                }
             } else {
-                source = stats.connects_per_day || {};
+                source = stats.connects_per_day;
+                labelFn = (key) => {
+                    const d = new Date(key + 'T00:00:00');
+                    return L('days_short')[d.getDay()];
+                };
                 titleText = L('chart_title_7d');
-                const dow = now.getDay();
-                const mondayOffset = (dow + 6) % 7;
-                const monday = new Date(now);
-                monday.setDate(now.getDate() - mondayOffset);
-                monday.setHours(0, 0, 0, 0);
-                const daysShort = L('days_short');
-                for (let i = 0; i < 7; i++) {
-                    const d = new Date(monday);
-                    d.setDate(monday.getDate() + i);
-                    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                    keys.push(key);
-                    labels.push(daysShort[d.getDay()]);
-                }
             }
 
-            activityChart.data.labels = labels;
-            activityChart.data.datasets[0].data = keys.map(k => source[k] || 0);
+            if (!source) return;
+
+            const keys = Object.keys(source).sort();
+            activityChart.data.labels = keys.map(labelFn);
+            activityChart.data.datasets[0].data = keys.map(k => source[k]);
             activityChart.update('none');
 
             const titleEl = document.querySelector('.chart-title');

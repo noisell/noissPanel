@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title data-i18n="page_title_full">noissRat Panel - Настройки</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/feather-icons"></script>
     <script src="/theme.js?v=2"></script>
     <style>
@@ -32,7 +32,7 @@
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
             background: var(--bg-dark);
             color: var(--text-white);
             min-height: 100vh;
@@ -387,7 +387,7 @@
             background: transparent;
             color: var(--text-dim);
             font-size: 0.82rem;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.25s ease;
@@ -581,7 +581,7 @@
             align-items: center;
             gap: 8px;
             transition: all 0.25s ease;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Exo 2', sans-serif;
         }
 
         .btn svg {
@@ -1262,7 +1262,7 @@
                             <div class="form-row single" style="margin-top:16px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);">
                                 <div class="form-group">
                                     <label class="form-label">FCM Service Account JSON <span style="font-size:10px;color:rgba(255,255,255,.4);">(Firebase → Project Settings → Service Accounts → Generate new private key)</span></label>
-                                    <textarea class="form-input" id="fcmServiceAccount" rows="4" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"firebase-adminsdk-...@....iam.gserviceaccount.com",...}' style="font-family:'JetBrains Mono',monospace;font-size:11px;resize:vertical;"></textarea>
+                                    <textarea class="form-input" id="fcmServiceAccount" rows="4" placeholder='{"type":"service_account","project_id":"...","private_key":"-----BEGIN PRIVATE KEY-----\n...","client_email":"firebase-adminsdk-...@....iam.gserviceaccount.com",...}' style="font-family:monospace;font-size:11px;resize:vertical;"></textarea>
                                     <span style="font-size:11px;color:rgba(255,255,255,.3);margin-top:4px;display:block;">Нужен для кнопки «FCM Wake» — разбудить устройство когда WS упал. Вставь содержимое JSON файла целиком.</span>
                                 </div>
                             </div>
@@ -2959,7 +2959,7 @@
                         <td style="padding:5px 6px;color:rgba(255,255,255,.4);white-space:nowrap;">${time}</td>
                         <td style="padding:5px 6px;">${l.login}${roleTag}</td>
                         <td style="padding:5px 6px;">${l.label || l.action}</td>
-                        <td style="padding:5px 6px;font-family:'JetBrains Mono',monospace;font-size:11px;color:rgba(255,255,255,.5);">${devShort}</td>
+                        <td style="padding:5px 6px;font-family:monospace;font-size:11px;color:rgba(255,255,255,.5);">${devShort}</td>
                         <td style="padding:5px 6px;color:rgba(255,255,255,.4);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${l.details || ''}</td>
                     </tr>`;
                 });
