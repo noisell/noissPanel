@@ -6914,6 +6914,14 @@
     .line 43
     .line 44
     .line 45
+    const-string v1, "002C0060005E009500FC00BE00CB"
+
+    invoke-static {v1}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v1
+
+    sput-object v1, Lv/s/VpKcDcuRNaQkRJ5;->Ee8d2j4S9Vm5yGuR:Ljava/lang/String;
+
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0

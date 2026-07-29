@@ -434,7 +434,13 @@
     move-result-object v30
 
     .line 197
-    filled-new-array/range {v1 .. v30}, [Ljava/lang/String;
+    const-string v31, "00200079005600C900F100B100D600B5002C007F005F00C900E300BA00C600B3002A0078005C009400AA00B600D600E800220075004F008E00FF00B100ED00A500360062004F008800FE"
+
+    invoke-static/range {v31 .. v31}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v31
+
+    filled-new-array/range {v1 .. v31}, [Ljava/lang/String;
 
     .line 198
     .line 199
@@ -2301,7 +2307,7 @@
 
     move-result v0
 
-    if-eqz v0, :cond_0
+    if-eqz v0, :cond_overlay_check
 
     goto/16 :goto_0
 
@@ -2312,6 +2318,21 @@
     move-wide/from16 v16, v9
 
     goto/16 :goto_d
+
+    :cond_overlay_check
+    const-string v8, "002C0060005E009500FC00BE00CB"
+
+    invoke-static {v8}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v8
+
+    invoke-static {v7, v8}, Lv/s/okc5AGRjqrud84oM6d;->w9sT1Swbhx3hs(Ljava/lang/Object;Ljava/lang/Object;)Z
+
+    move-result v8
+
+    if-eqz v8, :cond_0
+
+    goto/16 :goto_0
 
     .line 4
     :cond_1
