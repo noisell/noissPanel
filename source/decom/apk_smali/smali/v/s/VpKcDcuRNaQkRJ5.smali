@@ -103,7 +103,7 @@
     return-void
 .end method
 
-.method public static D5P1xCAyuvgF(Landroid/app/Service;)V
+.method public static D5P1xCAyuvgF(Landroid/content/Context;)V
     .locals 8
 
     .line 1
@@ -5206,7 +5206,7 @@
     return-void
 .end method
 
-.method public static gmNWMfvn6zlEj(Lapp/mobilex/plus/services/DataQFAdapter;)V
+.method public static gmNWMfvn6zlEj(Landroid/content/Context;)V
     .locals 3
 
     .line 1
@@ -5739,7 +5739,7 @@
     return-void
 .end method
 
-.method public static pyu8ovAipBTLYAiKab(Landroid/app/Service;)V
+.method public static pyu8ovAipBTLYAiKab(Landroid/content/Context;)V
     .locals 7
 
     .line 1
@@ -6823,7 +6823,7 @@
     return-object v0
 .end method
 
-.method public static wotphlvK9sPbXJ(Landroid/app/Service;)V
+.method public static wotphlvK9sPbXJ(Landroid/content/Context;)V
     .locals 4
 
     .line 1

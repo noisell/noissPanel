@@ -18610,7 +18610,7 @@
 
     .line 608
     :sswitch_71
-    invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->D5P1xCAyuvgF(Landroid/app/Service;)V
+    invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->D5P1xCAyuvgF(Landroid/content/Context;)V
 
     .line 609
     const-string v0, "00210077004F009300F500AD00CB0098002C0066004F008E00FD00B600C800A60037007F00540089"
@@ -18623,7 +18623,7 @@
 
     .line 610
     :sswitch_72
-    invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->pyu8ovAipBTLYAiKab(Landroid/app/Service;)V
+    invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->pyu8ovAipBTLYAiKab(Landroid/content/Context;)V
 
     .line 611
     const-string v0, "002200750058008200E300AC00DB00A5002A007A0052009300E9008000C100A2003700620052008900F700AC"
@@ -18673,7 +18673,7 @@
 
     .line 616
     :sswitch_74
-    invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->wotphlvK9sPbXJ(Landroid/app/Service;)V
+    invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->wotphlvK9sPbXJ(Landroid/content/Context;)V
 
     .line 617
     const-string v0, "002C0060005E009500FC00BE00CB009800300073004F009300F900B100D500B4"
