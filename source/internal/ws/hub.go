@@ -533,6 +533,8 @@ func handleDeviceMessageDepth(dc *DeviceConn, msg map[string]any, depth int) {
 func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 	msgType, _ := msg["type"].(string)
 
+	log.Printf("[MSG] device=%s type=%s", dc.ID, msgType)
+
 	if msgType == "hb" {
 		log.Printf("[HB] device=%s payload=%v", dc.ID, msg)
 	}
