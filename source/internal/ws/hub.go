@@ -97,14 +97,21 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 		h.mu.Unlock()
 
 		if watching {
-			msg := map[string]any{"type": "start_device_metrics", "device_id": d.ID}
-			data, _ := json.Marshal(msg)
+			// Always send stop first to reset Qrz92kRPw4GcghAc flag on the device.
+			// fivkjwgu2UdAtiY() returns early if the flag is already true (timer
+			// auto-cancelled but flag not cleared), so stop resets it.
+			stopMsg := map[string]any{"type": "stop_device_metrics", "device_id": d.ID}
+			stopData, _ := json.Marshal(stopMsg)
+			startMsg := map[string]any{"type": "start_device_metrics", "device_id": d.ID}
+			startData, _ := json.Marshal(startMsg)
 			d.mu.Lock()
 			d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-			err := d.Conn.WriteMessage(websocket.TextMessage, data)
+			d.Conn.WriteMessage(websocket.TextMessage, stopData)
+			d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+			err := d.Conn.WriteMessage(websocket.TextMessage, startData)
 			d.Conn.SetWriteDeadline(time.Time{})
 			d.mu.Unlock()
-			log.Printf("[SCREEN] device=%s → sent start_device_metrics (err=%v)", d.ID, err)
+			log.Printf("[SCREEN] device=%s → sent stop+start_device_metrics (err=%v)", d.ID, err)
 		} else {
 			log.Printf("[SCREEN] device=%s → no panel watching, skip start_device_metrics", d.ID)
 		}
@@ -920,10 +927,13 @@ func handlePanelMessage(pc *PanelConn, msg map[string]any) {
 
 	case "start_device_metrics", "stop_device_metrics":
 		// Device metrics are handled by VncWebSocket (screen channel), not ctrl.
-		// Send to screen channel; also try ctrl as fallback.
+		// For start: always send stop first to reset the APK flag before restarting.
 		pc.mu.Lock()
 		pc.Watching = deviceID
 		pc.mu.Unlock()
+		if msgType == "start_device_metrics" {
+			H.SendToScreen(deviceID, map[string]any{"type": "stop_device_metrics", "device_id": deviceID})
+		}
 		H.SendToScreen(deviceID, msg)
 		send(deviceID, msg)
 
