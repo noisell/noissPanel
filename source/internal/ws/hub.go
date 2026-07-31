@@ -605,6 +605,7 @@ func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 
 	case "device_metrics":
 		msg["device_id"] = dc.ID
+		log.Printf("[METRICS] device=%s cpu=%v ram=%v bat=%v", dc.ID, msg["cpu_usage"], msg["used_ram_percent"], msg["battery_level"])
 		H.NotifyPanels(dc.TeamID, msg)
 
 	case "ws_command_result":
