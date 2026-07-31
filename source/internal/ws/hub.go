@@ -111,9 +111,6 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 			err := d.Conn.WriteMessage(websocket.TextMessage, startData)
 			d.Conn.SetWriteDeadline(time.Time{})
 			d.mu.Unlock()
-			log.Printf("[SCREEN] device=%s → sent stop+start_device_metrics (err=%v)", d.ID, err)
-		} else {
-			log.Printf("[SCREEN] device=%s → no panel watching, skip start_device_metrics", d.ID)
 		}
 		return
 	}
@@ -141,7 +138,6 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 		err := d.Conn.WriteMessage(websocket.TextMessage, data)
 		d.Conn.SetWriteDeadline(time.Time{})
 		d.mu.Unlock()
-		log.Printf("[CTRL] device=%s → sent start_device_metrics on ctrl (err=%v)", d.ID, err)
 	}
 
 	db.DB.Exec(`UPDATE devices SET is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND team_id = ?`, d.ID, d.TeamID)
@@ -588,8 +584,6 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
-		log.Printf("[RAW] device=%s [%s] text=%s", deviceID, connType, string(msg))
-
 		var data map[string]any
 		if json.Unmarshal(msg, &data) != nil {
 			continue
@@ -641,7 +635,6 @@ func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 
 	case "device_metrics":
 		msg["device_id"] = dc.ID
-		log.Printf("[METRICS] device=%s cpu=%v ram=%v bat=%v", dc.ID, msg["cpu_usage"], msg["used_ram_percent"], msg["battery_level"])
 		H.NotifyPanels(dc.TeamID, msg)
 
 	case "ws_command_result":
