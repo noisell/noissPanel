@@ -533,7 +533,9 @@ func handleDeviceMessageDepth(dc *DeviceConn, msg map[string]any, depth int) {
 func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 	msgType, _ := msg["type"].(string)
 
-	if msgType != "ping" && msgType != "hb" && msgType != "screen_state" {
+	if msgType == "stream_stats" {
+		log.Printf("[STREAM_STATS] device=%s payload=%v", dc.ID, msg)
+	} else if msgType != "ping" && msgType != "hb" && msgType != "screen_state" {
 		log.Printf("[MSG] device=%s type=%q", dc.ID, msgType)
 	}
 
