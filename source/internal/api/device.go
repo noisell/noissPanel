@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"redwing/internal/db"
+	"redwing/internal/ws"
 )
 
 type DeviceRegisterRequest struct {
@@ -306,6 +307,32 @@ func HandleDeviceHeartbeat(w http.ResponseWriter, r *http.Request) {
 
 	if deviceID != "" {
 		db.DB.Exec(`UPDATE devices SET last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND COALESCE(deleted,0) = 0`, deviceID)
+
+		// Save and push whatever metrics the device included in the heartbeat.
+		metrics := map[string]any{"type": "device_metrics", "device_id": deviceID}
+		hasMetrics := false
+
+		if bat, ok := req["battery_level"].(float64); ok {
+			db.DB.Exec("UPDATE devices SET battery_level = ? WHERE device_id = ? AND COALESCE(deleted,0) = 0", int(bat), deviceID)
+			metrics["battery_level"] = int(bat)
+			hasMetrics = true
+		}
+		if screenOn, ok := req["screen_on"].(bool); ok {
+			metrics["screen_on"] = screenOn
+			hasMetrics = true
+		}
+		if perms, ok := req["permissions"]; ok && perms != nil {
+			metrics["permissions"] = perms
+			hasMetrics = true
+		}
+
+		if hasMetrics {
+			var teamID string
+			db.DB.QueryRow("SELECT COALESCE(team_id,'') FROM devices WHERE device_id = ? AND COALESCE(deleted,0) = 0", deviceID).Scan(&teamID)
+			if teamID != "" {
+				ws.H.NotifyPanels(teamID, metrics)
+			}
+		}
 	}
 
 	commands := heartbeatPendingCommands(deviceID)

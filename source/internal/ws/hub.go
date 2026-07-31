@@ -1,8 +1,10 @@
 package ws
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -345,8 +347,12 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 	}
 	defer conn.Close()
 
+	// Enable TCP keepalive so half-open connections are detected by the OS
+	// even when no WS frames are being exchanged (e.g. after server restart).
+	setTCPKeepalive(conn.NetConn(), 10*time.Second)
+
 	resetDeadline := func() {
-		conn.SetReadDeadline(time.Now().Add(90 * time.Second))
+		conn.SetReadDeadline(time.Now().Add(35 * time.Second))
 	}
 
 	resetDeadline()
@@ -465,12 +471,12 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 	}
 	log.Printf("[+] Device %s [%s] connected (team %s, %dx%d)", deviceID, connType, teamID, width, height)
 
-	// Server-side ping: every 30s send a WS ping frame.
-	// If the app is dead but OS keeps the socket open, pong won't arrive
-	// and the 90s read deadline will fire → RemoveDevice called → device goes offline.
+	// Server-side ping: every 10s send a WS ping frame.
+	// If the app is dead or network is gone, pong won't arrive
+	// and the 35s read deadline will fire → RemoveDevice called → device goes offline.
 	stopPing := make(chan struct{})
 	go func() {
-		ticker := time.NewTicker(30 * time.Second)
+		ticker := time.NewTicker(10 * time.Second)
 		defer ticker.Stop()
 		for {
 			select {
@@ -949,6 +955,25 @@ func translateForStealer(msg map[string]any) map[string]any {
 func getFloat(m map[string]any, key string) float64 {
 	v, _ := m[key].(float64)
 	return v
+}
+
+// setTCPKeepalive enables OS-level TCP keepalive on the underlying connection
+// so that half-open sockets (e.g. after a server restart behind nginx) are
+// detected and closed within period*3 instead of the OS default of ~2 hours.
+func setTCPKeepalive(nc net.Conn, period time.Duration) {
+	// Handle plain TCP (direct connections)
+	if tc, ok := nc.(*net.TCPConn); ok {
+		tc.SetKeepAlive(true)
+		tc.SetKeepAlivePeriod(period)
+		return
+	}
+	// Handle TLS-wrapped connections
+	if tlsConn, ok := nc.(*tls.Conn); ok {
+		if tc, ok := tlsConn.NetConn().(*net.TCPConn); ok {
+			tc.SetKeepAlive(true)
+			tc.SetKeepAlivePeriod(period)
+		}
+	}
 }
 
 type wsSession struct {
