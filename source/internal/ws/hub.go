@@ -557,6 +557,8 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 			continue
 		}
 
+		log.Printf("[RAW] device=%s [%s] text=%s", deviceID, connType, string(msg))
+
 		var data map[string]any
 		if json.Unmarshal(msg, &data) != nil {
 			continue
