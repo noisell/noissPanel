@@ -101,9 +101,12 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 			data, _ := json.Marshal(msg)
 			d.mu.Lock()
 			d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-			d.Conn.WriteMessage(websocket.TextMessage, data)
+			err := d.Conn.WriteMessage(websocket.TextMessage, data)
 			d.Conn.SetWriteDeadline(time.Time{})
 			d.mu.Unlock()
+			log.Printf("[SCREEN] device=%s → sent start_device_metrics (err=%v)", d.ID, err)
+		} else {
+			log.Printf("[SCREEN] device=%s → no panel watching, skip start_device_metrics", d.ID)
 		}
 		return
 	}
