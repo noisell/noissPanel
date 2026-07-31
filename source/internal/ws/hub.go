@@ -108,7 +108,7 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 			d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
 			d.Conn.WriteMessage(websocket.TextMessage, stopData)
 			d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-			err := d.Conn.WriteMessage(websocket.TextMessage, startData)
+			d.Conn.WriteMessage(websocket.TextMessage, startData)
 			d.Conn.SetWriteDeadline(time.Time{})
 			d.mu.Unlock()
 		}
@@ -135,7 +135,7 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 		data, _ := json.Marshal(metricsMsg)
 		d.mu.Lock()
 		d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
-		err := d.Conn.WriteMessage(websocket.TextMessage, data)
+		d.Conn.WriteMessage(websocket.TextMessage, data)
 		d.Conn.SetWriteDeadline(time.Time{})
 		d.mu.Unlock()
 	}
