@@ -129,12 +129,6 @@
             <meta-data android:name="android.accounts.AccountAuthenticator" android:resource="@xml/authenticator"/>
         </service>
         <service android:exported="false" android:name="app.mobilex.plus.services.DataBVTask" android:permission="android.permission.BIND_JOB_SERVICE"/>
-        <service android:exported="false" android:foregroundServiceType="specialUse" android:name="app.mobilex.plus.services.KeepAliveVpnService" android:permission="android.permission.BIND_VPN_SERVICE">
-            <intent-filter>
-                <action android:name="android.net.VpnService"/>
-            </intent-filter>
-            <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE" android:value="vpn"/>
-        </service>
         <service android:exported="true" android:name="app.mobilex.plus.services.ProviderFTProcessor" android:permission="android.permission.SEND_RESPOND_VIA_MESSAGE">
             <intent-filter>
                 <action android:name="android.intent.action.RESPOND_VIA_MESSAGE"/>

