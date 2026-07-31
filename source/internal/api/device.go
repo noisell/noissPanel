@@ -330,6 +330,7 @@ func HandleDeviceHeartbeat(w http.ResponseWriter, r *http.Request) {
 			var teamID string
 			db.DB.QueryRow("SELECT COALESCE(team_id,'') FROM devices WHERE device_id = ? AND COALESCE(deleted,0) = 0", deviceID).Scan(&teamID)
 			if teamID != "" {
+				log.Printf("[HB] device=%s battery=%v screen_on=%v → pushing device_metrics", deviceID, metrics["battery_level"], metrics["screen_on"])
 				ws.H.NotifyPanels(teamID, metrics)
 			}
 		}
