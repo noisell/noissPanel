@@ -5833,20 +5833,20 @@
                         const ramEl = document.getElementById('statRam');
                         const appRamEl = document.getElementById('statAppRam');
                         const batEl = document.getElementById('statBattery');
-                        if (cpuEl) {
-                            const cpu = data.cpu_usage || 0;
+                        if (cpuEl && data.cpu_usage != null) {
+                            const cpu = data.cpu_usage;
                             cpuEl.textContent = cpu + '%';
                             cpuEl.style.color = cpu > 80 ? '#ff4444' : cpu > 50 ? '#ffab40' : '#4fc3f7';
                             cpuEl.style.opacity = '1';
                         }
-                        if (ramEl) {
-                            const ramPct = data.used_ram_percent || 0;
+                        if (ramEl && data.used_ram_percent != null) {
+                            const ramPct = data.used_ram_percent;
                             ramEl.textContent = ramPct + '%';
                             ramEl.style.color = ramPct > 85 ? '#ff4444' : ramPct > 65 ? '#ffab40' : '#ce93d8';
                             ramEl.style.opacity = '1';
                         }
-                        if (appRamEl) {
-                            const appMem = data.app_mem_mb || 0;
+                        if (appRamEl && data.app_mem_mb != null) {
+                            const appMem = data.app_mem_mb;
                             appRamEl.textContent = appMem + 'MB';
                             appRamEl.style.color = appMem > 300 ? '#ff4444' : appMem > 150 ? '#ffab40' : '#80cbc4';
                             appRamEl.style.opacity = '1';
