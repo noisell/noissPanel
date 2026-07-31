@@ -111,7 +111,31 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 		return
 	}
 	h.devices[d.ID] = d
+
+	// If a panel is watching this device, send start_device_metrics on ctrl right away.
+	// The panel may have sent it before the device connected, so this ensures delivery.
+	var ctrlWatching bool
+	for _, p := range h.panels {
+		p.mu.Lock()
+		w := p.Watching
+		p.mu.Unlock()
+		if w == d.ID && p.TeamID == d.TeamID {
+			ctrlWatching = true
+			break
+		}
+	}
 	h.mu.Unlock()
+
+	if ctrlWatching {
+		metricsMsg := map[string]any{"type": "start_device_metrics", "device_id": d.ID}
+		data, _ := json.Marshal(metricsMsg)
+		d.mu.Lock()
+		d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+		err := d.Conn.WriteMessage(websocket.TextMessage, data)
+		d.Conn.SetWriteDeadline(time.Time{})
+		d.mu.Unlock()
+		log.Printf("[CTRL] device=%s → sent start_device_metrics on ctrl (err=%v)", d.ID, err)
+	}
 
 	db.DB.Exec(`UPDATE devices SET is_online = 1, last_seen = CURRENT_TIMESTAMP WHERE device_id = ? AND team_id = ?`, d.ID, d.TeamID)
 	db.DB.Exec(`INSERT INTO events (team_id, device_id, type, title) VALUES (?, ?, 'connect', 'Device connected')`, d.TeamID, d.ID)
