@@ -539,12 +539,6 @@ func handleDeviceMessageDepth(dc *DeviceConn, msg map[string]any, depth int) {
 func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 	msgType, _ := msg["type"].(string)
 
-	log.Printf("[MSG] device=%s type=%s", dc.ID, msgType)
-
-	if msgType == "hb" {
-		log.Printf("[HB] device=%s payload=%v", dc.ID, msg)
-	}
-
 	switch msgType {
 	case "ping":
 		dc.mu.Lock()
@@ -570,7 +564,6 @@ func handleDeviceMessageInner(dc *DeviceConn, msg map[string]any, depth int) {
 
 	case "device_metrics":
 		msg["device_id"] = dc.ID
-		log.Printf("[METRICS] device=%s cpu=%v ram=%v", dc.ID, msg["cpu_usage"], msg["used_ram_percent"])
 		H.NotifyPanels(dc.TeamID, msg)
 
 	case "ws_command_result":
