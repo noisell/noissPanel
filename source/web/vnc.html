@@ -5832,6 +5832,7 @@
                         const cpuEl = document.getElementById('statCpu');
                         const ramEl = document.getElementById('statRam');
                         const appRamEl = document.getElementById('statAppRam');
+                        const batEl = document.getElementById('statBattery');
                         if (cpuEl) {
                             const cpu = data.cpu_usage || 0;
                             cpuEl.textContent = cpu + '%';
@@ -5849,6 +5850,13 @@
                             appRamEl.textContent = appMem + 'MB';
                             appRamEl.style.color = appMem > 300 ? '#ff4444' : appMem > 150 ? '#ffab40' : '#80cbc4';
                             appRamEl.style.opacity = '1';
+                        }
+                        if (batEl && data.battery_level != null) {
+                            const bat = data.battery_level;
+                            batEl.textContent = bat + '%';
+                            batEl.style.color = bat < 20 ? '#ff4444' : bat < 40 ? '#ffab40' : '#66bb6a';
+                            batEl.style.opacity = '1';
+                            if (selectedDevice) selectedDevice.battery = bat;
                         }
                     }
                     break;
