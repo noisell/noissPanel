@@ -5683,6 +5683,7 @@
                     if (selectedDevice && data.device_id === selectedDevice.id) {
                         updateConnectStatus('Устройство переподключилось', 'connected');
                         ws.send(JSON.stringify({ type: 'start_watching', device_id: selectedDevice.id }));
+                        ws.send(JSON.stringify({ type: 'start_device_metrics', device_id: selectedDevice.id }));
                         if (videoModeEnabled) {
                             const q = parseInt(document.getElementById('qualitySlider').value) || 50;
                             ws.send(JSON.stringify({
