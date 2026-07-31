@@ -926,6 +926,7 @@ func handlePanelMessage(pc *PanelConn, msg map[string]any) {
 		pc.mu.Unlock()
 		if msgType == "start_device_metrics" {
 			H.SendToScreen(deviceID, map[string]any{"type": "stop_device_metrics", "device_id": deviceID})
+			H.SendToDevice(deviceID, map[string]any{"type": "stop_device_metrics", "device_id": deviceID})
 		}
 		H.SendToScreen(deviceID, msg)
 		send(deviceID, msg)
