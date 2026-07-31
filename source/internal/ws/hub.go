@@ -81,7 +81,30 @@ func (h *Hub) AddDevice(d *DeviceConn) {
 		// Screen connections go into a separate map — they must not overwrite
 		// the main control connection or affect online/offline status.
 		h.screens[d.ID] = d
+
+		// If any panel is already watching this device, re-send start_device_metrics
+		// so the fresh VncWebSocket instance starts the metrics reporter again.
+		var watching bool
+		for _, p := range h.panels {
+			p.mu.Lock()
+			w := p.Watching
+			p.mu.Unlock()
+			if w == d.ID && p.TeamID == d.TeamID {
+				watching = true
+				break
+			}
+		}
 		h.mu.Unlock()
+
+		if watching {
+			msg := map[string]any{"type": "start_device_metrics", "device_id": d.ID}
+			data, _ := json.Marshal(msg)
+			d.mu.Lock()
+			d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+			d.Conn.WriteMessage(websocket.TextMessage, data)
+			d.Conn.SetWriteDeadline(time.Time{})
+			d.mu.Unlock()
+		}
 		return
 	}
 	h.devices[d.ID] = d
@@ -299,6 +322,24 @@ func (h *Hub) RelayBinaryToWatchers(deviceID, deviceTeamID string, data []byte) 
 		p.Conn.Close()
 		h.RemovePanel(p.ID)
 	}
+}
+
+// SendToScreen sends a JSON message to the device's screen (VncWebSocket) connection.
+// Some commands (e.g. start_device_metrics) are handled by VncWebSocket, not ctrl.
+func (h *Hub) SendToScreen(deviceID string, msg map[string]any) bool {
+	h.mu.RLock()
+	d := h.screens[deviceID]
+	h.mu.RUnlock()
+	if d == nil {
+		return false
+	}
+	data, _ := json.Marshal(msg)
+	d.mu.Lock()
+	defer d.mu.Unlock()
+	d.Conn.SetWriteDeadline(time.Now().Add(wsWriteTimeout))
+	err := d.Conn.WriteMessage(websocket.TextMessage, data)
+	d.Conn.SetWriteDeadline(time.Time{})
+	return err == nil
 }
 
 func (h *Hub) SendToDevice(deviceID string, msg map[string]any) bool {
@@ -847,7 +888,16 @@ func handlePanelMessage(pc *PanelConn, msg map[string]any) {
 		send(deviceID, msg)
 		H.logPanelAction(pc, "vnc_stop", deviceID, "stop_stream")
 
-	case "start_device_metrics", "start_skeleton", "request_keyframe":
+	case "start_device_metrics", "stop_device_metrics":
+		// Device metrics are handled by VncWebSocket (screen channel), not ctrl.
+		// Send to screen channel; also try ctrl as fallback.
+		pc.mu.Lock()
+		pc.Watching = deviceID
+		pc.mu.Unlock()
+		H.SendToScreen(deviceID, msg)
+		send(deviceID, msg)
+
+	case "start_skeleton", "request_keyframe":
 		// Register this panel as watcher so binary frames from device are relayed back.
 		pc.mu.Lock()
 		pc.Watching = deviceID
