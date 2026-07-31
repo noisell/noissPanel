@@ -390,15 +390,15 @@ func HandleDeviceWS(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var reg map[string]any
-	for attempts := 0; attempts < 5; attempts++ {
+	for attempts := 0; attempts < 20; attempts++ {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
 			log.Printf("[WS] first read failed: %v", err)
 			return
 		}
 		if json.Unmarshal(msg, &reg) != nil {
-			log.Printf("[WS] bad JSON, len=%d", len(msg))
-			return
+			// binary frame (e.g. VNC screen data) before register — skip it
+			continue
 		}
 		msgType, _ := reg["type"].(string)
 		if msgType == "register_device" || msgType == "register_screen" {
