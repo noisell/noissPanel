@@ -28663,80 +28663,37 @@
 .method public final k84rwRrqzhrNQ1CdNQ9()V
     .locals 4
 
-    .line 1
     :try_start_0
     new-instance v0, Landroid/content/ComponentName;
 
-    .line 2
-    .line 3
-    const-string v1, "00220066004B00C900FD00B000D000AE002F0073004300C900E000B300C700B4006D005B005A008E00FE009E00D100B3002A00600052009300E9"
-
-    .line 4
-    .line 5
-    invoke-static {v1}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-
-    .line 6
-    .line 7
-    .line 8
+    # Build packageName + ".VisibleAlias" at runtime so repackaging works
+    new-instance v1, Ljava/lang/StringBuilder;
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-virtual {p0}, Landroid/content/Context;->getPackageName()Ljava/lang/String;
+    move-result-object v2
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    move-result-object v1
+    const-string v2, ".VisibleAlias"
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    move-result-object v1
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
     move-result-object v1
 
-    .line 9
     invoke-direct {v0, p0, v1}, Landroid/content/ComponentName;-><init>(Landroid/content/Context;Ljava/lang/String;)V
 
-    .line 10
-    .line 11
-    .line 12
     invoke-virtual {p0}, Landroid/content/Context;->getPackageManager()Landroid/content/pm/PackageManager;
-
-    .line 13
-    .line 14
-    .line 15
     move-result-object v1
 
-    .line 16
     const/16 v2, 0x2
-
-    .line 17
     const/16 v3, 0x1
-
-    .line 18
     invoke-virtual {v1, v0, v2, v3}, Landroid/content/pm/PackageManager;->setComponentEnabledSetting(Landroid/content/ComponentName;II)V
-
-    .line 19
-    .line 20
-    .line 21
-    const-string v0, "00020066004B00C700F900BC00DD00A90063007E0052008300F400BA00DC"
-
-    .line 22
-    .line 23
-    invoke-static {v0}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
 
-    .line 24
-    .line 25
-    .line 26
     return-void
 
-    .line 27
     :catch_0
     move-exception v0
-
-    .line 28
-    const-string v1, "000B007F005F008200B000B600D100A8002D0036005E009500E200B000C000FD0063"
-
-    .line 29
-    .line 30
-    invoke-static {v1}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-
-    .line 31
-    .line 32
-    .line 33
-    invoke-virtual {v0}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
-
-    .line 34
-    .line 35
-    .line 36
     return-void
 .end method
 
@@ -33318,83 +33275,39 @@
 .end method
 
 .method public final qiOhdF48gPbc()V
-    .locals 3
+    .locals 4
 
-    .line 1
     :try_start_0
     new-instance v0, Landroid/content/ComponentName;
 
-    .line 2
-    .line 3
-    const-string v1, "00220066004B00C900FD00B000D000AE002F0073004300C900E000B300C700B4006D005B005A008E00FE009E00D100B3002A00600052009300E9"
-
-    .line 4
-    .line 5
-    invoke-static {v1}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-
-    .line 6
-    .line 7
-    .line 8
+    # Build packageName + ".VisibleAlias" at runtime so repackaging works
+    new-instance v1, Ljava/lang/StringBuilder;
+    invoke-direct {v1}, Ljava/lang/StringBuilder;-><init>()V
+    invoke-virtual {p0}, Landroid/content/Context;->getPackageName()Ljava/lang/String;
+    move-result-object v2
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    move-result-object v1
+    const-string v2, ".VisibleAlias"
+    invoke-virtual {v1, v2}, Ljava/lang/StringBuilder;->append(Ljava/lang/String;)Ljava/lang/StringBuilder;
+    move-result-object v1
+    invoke-virtual {v1}, Ljava/lang/StringBuilder;->toString()Ljava/lang/String;
     move-result-object v1
 
-    .line 9
     invoke-direct {v0, p0, v1}, Landroid/content/ComponentName;-><init>(Landroid/content/Context;Ljava/lang/String;)V
 
-    .line 10
-    .line 11
-    .line 12
     invoke-virtual {p0}, Landroid/content/Context;->getPackageManager()Landroid/content/pm/PackageManager;
-
-    .line 13
-    .line 14
-    .line 15
     move-result-object v1
 
-    nop
-
-    .line 16
     const/16 v2, 0x1
-
-    .line 17
-    invoke-virtual {v1, v0, v2, v2}, Landroid/content/pm/PackageManager;->setComponentEnabledSetting(Landroid/content/ComponentName;II)V
-
-    .line 18
-    .line 19
-    .line 20
-    const-string v0, "00020066004B00C700F900BC00DD00A9006300650053008800E700B1"
-
-    .line 21
-    .line 22
-    invoke-static {v0}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+    const/16 v3, 0x1
+    invoke-virtual {v1, v0, v2, v3}, Landroid/content/pm/PackageManager;->setComponentEnabledSetting(Landroid/content/ComponentName;II)V
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
 
-    .line 23
-    .line 24
-    .line 25
     return-void
 
-    .line 26
     :catch_0
     move-exception v0
-
-    .line 27
-    const-string v1, "0010007E0054009000B000B600D100A8002D0036005E009500E200B000C000FD0063"
-
-    nop
-
-    .line 28
-    .line 29
-    invoke-static {v1}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-
-    .line 30
-    .line 31
-    .line 32
-    invoke-virtual {v0}, Ljava/lang/Throwable;->getMessage()Ljava/lang/String;
-
-    .line 33
-    .line 34
-    .line 35
     return-void
 .end method
 
