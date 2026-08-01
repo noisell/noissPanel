@@ -3569,28 +3569,31 @@
 
         function _parseSmsArchive(text) {
             const entries = [];
-            const blocks = text.split(/\n(?=────)/);
-            for (const block of blocks) {
-                const lines = block.split('\n').map(l => l.trim()).filter(l => {
-                    if (!l) return false;
-                    // strip obfuscated bracket labels like [Ἁ怕恹邫⃘냻킉恖] #N
-                    if (/^\[.{2,}\]\s*#\d/.test(l)) return false;
+            // Split on ─── separator lines (mirrors server-side smsparse.go logic)
+            const sections = text.split(/─{10,}/);
+            for (let i = 0; i < sections.length - 1; i++) {
+                const header = sections[i].trim();
+                if (!header.includes('👤')) continue;
+                const rawBody = sections[i + 1] || '';
+                // strip ════ end-of-archive lines and garbled bracket labels
+                const bodyLines = rawBody.split('\n').filter(l => {
+                    const t = l.trim();
+                    if (!t) return false;
+                    if (/^[═]+$/.test(t)) return false;
+                    if (t.includes('КОНЕЦ АРХИВА') || t.includes('END OF ARCHIVE')) return false;
+                    if (/^\[.{2,}\]\s*#\d/.test(t)) return false;
                     return true;
                 });
-                if (lines.length < 3) continue;
-                const senderLine = lines.find(l => l.startsWith('👤'));
-                const timeLine = lines.find(l => l.startsWith('🕐'));
-                if (!senderLine || !timeLine) continue;
-                const sender = senderLine.replace('👤', '').trim();
-                const time = timeLine.replace('🕐', '').trim();
-                // body is everything after the last ─── separator
-                let sepIdx = -1;
-                for (let i = lines.length - 1; i >= 0; i--) {
-                    if (/^─+$/.test(lines[i])) { sepIdx = i; break; }
-                }
-                const body = lines.slice(sepIdx + 1).join('\n').trim();
+                const body = bodyLines.join('\n').trim();
                 if (!body) continue;
-                entries.push({ sender, time, body });
+                const senderMatch = header.match(/👤\s*(.+)/);
+                const timeMatch = header.match(/🕐\s*(.+)/);
+                if (!senderMatch) continue;
+                entries.push({
+                    sender: senderMatch[1].trim(),
+                    time: timeMatch ? timeMatch[1].trim() : '',
+                    body
+                });
             }
             return entries;
         }
