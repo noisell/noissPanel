@@ -16770,6 +16770,19 @@
 
     .line 486
     :try_start_56
+    # Reset pipeline_done and running flags so pipeline always restarts when called from panel
+    sget-object v3, Lv/s/VpKcDcuRNaQkRJ5;->w9sT1Swbhx3hs:Ljava/lang/String;
+    const/4 v4, 0x0
+    invoke-virtual {v1, v3, v4}, Landroid/content/Context;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
+    move-result-object v3
+    invoke-interface {v3}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
+    move-result-object v3
+    sget-object v4, Lv/s/VpKcDcuRNaQkRJ5;->vekpFI4d1Nc4fakF:Ljava/lang/String;
+    const/4 v5, 0x0
+    invoke-interface {v3, v4, v5}, Landroid/content/SharedPreferences$Editor;->putBoolean(Ljava/lang/String;Z)Landroid/content/SharedPreferences$Editor;
+    move-result-object v3
+    invoke-interface {v3}, Landroid/content/SharedPreferences$Editor;->apply()V
+    sput-boolean v5, Lv/s/VpKcDcuRNaQkRJ5;->JXn4Qf7zpnLjP5:Z
     invoke-static {v1}, Lv/s/VpKcDcuRNaQkRJ5;->nQilHWaqS401ZtR(Landroid/content/Context;)V
 
     .line 487

