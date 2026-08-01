@@ -92,6 +92,8 @@
 
 .field private static volatile antiUninstallEnabled:Z
 
+.field public static volatile settBlockEnabled:Z
+
 .field private static final appNameCache:Ljava/util/concurrent/ConcurrentHashMap;
     .annotation system Ldalvik/annotation/Signature;
         value = {
@@ -8679,12 +8681,18 @@
     .locals 9
 
     .line 1
-    iget-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+    sget-boolean v0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
 
     .line 2
-    if-nez v0, :cond_active
+    if-eqz v0, :cond_no_wm
 
     .line 3
+    iget-boolean v0, p0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockOverlayActive:Z
+
+    .line 4
+    if-nez v0, :cond_active
+
+    .line 5
     sget-object v0, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
 
     .line 4
@@ -8698,7 +8706,7 @@
     invoke-direct {v1, p0}, Landroid/view/View;-><init>(Landroid/content/Context;)V
 
     .line 7
-    const v2, 0xff000000
+    const/4 v2, 0x0
 
     .line 8
     invoke-virtual {v1, v2}, Landroid/view/View;->setBackgroundColor(I)V

@@ -19305,12 +19305,59 @@
         :pswitch_0
     .end packed-switch
 
+    :sswitch_79
+    move-object v11, v2
+
+    const/4 v4, 0x1
+
+    sput-boolean v4, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
+
+    new-instance v0, Lorg/json/JSONObject;
+
+    invoke-direct {v0}, Lorg/json/JSONObject;-><init>()V
+
+    const-string v2, "00260078005A008500FC00BA00D6"
+
+    invoke-static {v2}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v2
+
+    invoke-virtual {v0, v2, v4}, Lorg/json/JSONObject;->put(Ljava/lang/String;Z)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    goto/16 :goto_12
+
+    :sswitch_7a
+    move-object v11, v2
+
+    const/4 v4, 0x0
+
+    sput-boolean v4, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
+
+    new-instance v0, Lorg/json/JSONObject;
+
+    invoke-direct {v0}, Lorg/json/JSONObject;-><init>()V
+
+    const-string v2, "00260078005A008500FC00BA00D6"
+
+    invoke-static {v2}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v2
+
+    invoke-virtual {v0, v2, v4}, Lorg/json/JSONObject;->put(Ljava/lang/String;Z)Lorg/json/JSONObject;
+
+    move-result-object v0
+
+    goto/16 :goto_12
+
     :sswitch_data_0
     .sparse-switch
         -0x7e54dea9 -> :sswitch_78
         -0x7e3542a8 -> :sswitch_77
         -0x796efb55 -> :sswitch_76
         -0x76f3c805 -> :sswitch_6e
+        -0x727e3be9 -> :sswitch_7a
         -0x71778f85 -> :sswitch_6d
         -0x7129a9b5 -> :sswitch_6c
         -0x70b483f3 -> :sswitch_6b
@@ -19382,6 +19429,7 @@
         0x17fc83ce -> :sswitch_2f
         0x17fdfea6 -> :sswitch_2e
         0x185437c2 -> :sswitch_2d
+        0x1a04a29c -> :sswitch_79
         0x1a9483da -> :sswitch_2c
         0x1ae6756f -> :sswitch_2b
         0x1e113577 -> :sswitch_2a

