@@ -25506,19 +25506,7 @@
     .line 144
     .line 145
     .line 146
-    :try_start_1
-    invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-
-    .line 147
-    .line 148
-    .line 149
-    const-string v0, "0007007F0049008200F300AB009200B4003700770049009300D100BC00C600AE0035007F004F009E00B000BE00DE00B4002C0036005A009300E400BA00DF00B700370073005F00C700B800B900D300AB002F0074005A008400FB00F6"
-
-    .line 150
-    .line 151
-    invoke-static {v0}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
-    :try_end_1
-    .catch Ljava/lang/Exception; {:try_start_1 .. :try_end_1} :catch_0
+    nop
 
     .line 152
     .line 153
