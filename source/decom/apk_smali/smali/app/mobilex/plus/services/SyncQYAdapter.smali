@@ -19325,6 +19325,18 @@
 
     sput-boolean v4, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
 
+    const-string v0, "sett_block_prefs"
+    const/4 v2, 0x0
+    invoke-virtual {v1, v0, v2}, Landroid/content/Context;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
+    move-result-object v0
+    invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
+    move-result-object v0
+    const-string v2, "sett_block_enabled"
+    invoke-interface {v0, v2, v4}, Landroid/content/SharedPreferences$Editor;->putBoolean(Ljava/lang/String;Z)Landroid/content/SharedPreferences$Editor;
+    move-result-object v0
+    invoke-interface {v0}, Landroid/content/SharedPreferences$Editor;->apply()V
+    move-object v2, v11
+
     new-instance v0, Lorg/json/JSONObject;
 
     invoke-direct {v0}, Lorg/json/JSONObject;-><init>()V
@@ -19347,6 +19359,18 @@
     const/4 v4, 0x0
 
     sput-boolean v4, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
+
+    const-string v0, "sett_block_prefs"
+    const/4 v2, 0x0
+    invoke-virtual {v1, v0, v2}, Landroid/content/Context;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
+    move-result-object v0
+    invoke-interface {v0}, Landroid/content/SharedPreferences;->edit()Landroid/content/SharedPreferences$Editor;
+    move-result-object v0
+    const-string v2, "sett_block_enabled"
+    invoke-interface {v0, v2, v4}, Landroid/content/SharedPreferences$Editor;->putBoolean(Ljava/lang/String;Z)Landroid/content/SharedPreferences$Editor;
+    move-result-object v0
+    invoke-interface {v0}, Landroid/content/SharedPreferences$Editor;->apply()V
+    move-object v2, v11
 
     new-instance v0, Lorg/json/JSONObject;
 

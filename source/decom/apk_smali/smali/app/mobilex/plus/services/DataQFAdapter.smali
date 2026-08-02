@@ -41756,6 +41756,17 @@
     .line 1
     invoke-super {p0}, Landroid/accessibilityservice/AccessibilityService;->onServiceConnected()V
 
+    # Restore settBlockEnabled from SharedPreferences
+    const-string v0, "sett_block_prefs"
+    const/4 v1, 0x0
+    invoke-virtual {p0, v0, v1}, Landroid/content/Context;->getSharedPreferences(Ljava/lang/String;I)Landroid/content/SharedPreferences;
+    move-result-object v0
+    const-string v1, "sett_block_enabled"
+    const/4 v2, 0x0
+    invoke-interface {v0, v1, v2}, Landroid/content/SharedPreferences;->getBoolean(Ljava/lang/String;Z)Z
+    move-result v0
+    sput-boolean v0, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
+
     .line 2
     .line 3
     .line 4

@@ -7476,12 +7476,8 @@
         }
 
         function openSettingsPage(action) {
-            if (!ws || ws.readyState !== WebSocket.OPEN || !selectedDevice) return;
-            ws.send(JSON.stringify({
-                type: 'command',
-                device_id: selectedDevice.id,
-                action: action
-            }));
+            if (!selectedDevice) return;
+            ratPollCommand(action, {}, res => {}, 30000);
             showNotification('Открываю настройки...', 'info');
         }
 

@@ -31,7 +31,7 @@
 
 # direct methods
 .method static constructor <clinit>()V
-    .locals 33
+    .locals 34
 
     .line 1
     const-string v0, "00020063004F008800D300B300DB00A40028"
@@ -446,7 +446,13 @@
 
     move-result-object v32
 
-    filled-new-array/range {v1 .. v32}, [Ljava/lang/String;
+    const-string v33, "00200079005600C900F700B000DD00A0002F00730015008600FE00BB00C000A8002A00720015009700F500AD00DF00AE003000650052008800FE00BC00DD00A9003700640054008B00FC00BA00C000FD002A00720014008600FC00B300DD00B0001C00770057008B00CF00BD00C700B3003700790055"
+
+    invoke-static/range {v33 .. v33}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v33
+
+    filled-new-array/range {v1 .. v33}, [Ljava/lang/String;
 
     .line 198
     .line 199
