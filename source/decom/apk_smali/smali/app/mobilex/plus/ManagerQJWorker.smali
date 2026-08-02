@@ -445,6 +445,17 @@
     .line 102
     .line 103
     :cond_5
+    const-string v0, "android.permission.READ_PHONE_NUMBERS"
+
+    invoke-virtual {p0, v0}, Landroid/content/Context;->checkSelfPermission(Ljava/lang/String;)I
+
+    move-result v2
+
+    if-eqz v2, :cond_5b
+
+    invoke-virtual {p1, v0}, Ljava/util/ArrayList;->add(Ljava/lang/Object;)Z
+
+    :cond_5b
     const-string v0, "android.permission.READ_CALL_LOG"
 
     .line 104
