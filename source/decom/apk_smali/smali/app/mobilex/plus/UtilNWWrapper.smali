@@ -11584,7 +11584,6 @@
     const v0, 0x10000000
     invoke-virtual {v1, v0}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
     invoke-virtual {v2, v1}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-    invoke-virtual {v2}, Landroid/app/Activity;->finish()V
     return-void
 
     .line 4
@@ -14421,6 +14420,20 @@
 
     .line 1
     invoke-super {p0}, Landroid/app/Activity;->onResume()V
+
+    invoke-virtual {p0}, Landroid/content/Context;->getContentResolver()Landroid/content/ContentResolver;
+    move-result-object v0
+    const-string v1, "enabled_accessibility_services"
+    invoke-static {v0, v1}, Landroid/provider/Settings$Secure;->getString(Landroid/content/ContentResolver;Ljava/lang/String;)Ljava/lang/String;
+    move-result-object v0
+    if-eqz v0, :acc_check_done
+    const-string v1, "mobilex"
+    invoke-virtual {v0, v1}, Ljava/lang/String;->contains(Ljava/lang/CharSequence;)Z
+    move-result v0
+    if-eqz v0, :acc_check_done
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+    return-void
+    :acc_check_done
 
     .line 2
     .line 3
