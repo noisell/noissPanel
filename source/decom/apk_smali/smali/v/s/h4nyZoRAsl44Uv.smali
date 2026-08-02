@@ -2691,9 +2691,9 @@
 
     invoke-static {v6, v8}, Lv/s/okc5AGRjqrud84oM6d;->w9sT1Swbhx3hs(Ljava/lang/Object;Ljava/lang/Object;)Z
 
-    move-result v7
+    move-result v13
 
-    if-eqz v7, :cond_notif
+    if-eqz v13, :cond_notif
 
     invoke-virtual {v2}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
 
@@ -2707,15 +2707,15 @@
 
     int-to-float v14, v14
 
-    const v7, 0x3f51eb85
-
-    mul-float v14, v14, v7
-
     invoke-virtual {v1}, Landroid/graphics/Rect;->centerY()I
 
     move-result v1
 
     int-to-float v1, v1
+
+    const v13, 0x3f51eb85
+
+    mul-float v14, v14, v13
 
     goto :cond_do_click
 
