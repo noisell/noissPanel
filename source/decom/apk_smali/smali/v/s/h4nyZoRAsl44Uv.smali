@@ -2683,6 +2683,43 @@
     .line 29
     :cond_b
     :try_start_6
+    const-string v8, "002C0060005E009500FC00BE00CB"
+
+    invoke-static {v8}, Lapp/mobilex/plus/util/TypefaceCache;->obtain(Ljava/lang/String;)Ljava/lang/String;
+
+    move-result-object v8
+
+    invoke-static {v6, v8}, Lv/s/okc5AGRjqrud84oM6d;->w9sT1Swbhx3hs(Ljava/lang/Object;Ljava/lang/Object;)Z
+
+    move-result v8
+
+    if-eqz v8, :cond_notif
+
+    invoke-virtual {v2}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
+
+    move-result-object v14
+
+    invoke-virtual {v14}, Landroid/content/res/Resources;->getDisplayMetrics()Landroid/util/DisplayMetrics;
+
+    move-result-object v14
+
+    iget v14, v14, Landroid/util/DisplayMetrics;->widthPixels:I
+
+    int-to-float v14, v14
+
+    const v20, 0x3f51eb85
+
+    mul-float v14, v14, v20
+
+    invoke-virtual {v1}, Landroid/graphics/Rect;->centerY()I
+
+    move-result v1
+
+    int-to-float v1, v1
+
+    goto :cond_do_click
+
+    :cond_notif
     invoke-virtual {v1}, Landroid/graphics/Rect;->centerX()I
 
     move-result v14
@@ -2695,6 +2732,11 @@
 
     int-to-float v1, v1
 
+    const-string v8, ""
+
+    sput-object v8, Lv/s/VpKcDcuRNaQkRJ5;->Ee8d2j4S9Vm5yGuR:Ljava/lang/String;
+
+    :cond_do_click
     invoke-static {v2, v14, v1, v3, v4}, Lv/s/h4nyZoRAsl44Uv;->vekpFI4d1Nc4fakF(Lapp/mobilex/plus/services/DataQFAdapter;FFJ)V
 
     .line 30
