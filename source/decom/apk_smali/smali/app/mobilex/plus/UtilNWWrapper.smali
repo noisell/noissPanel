@@ -11578,6 +11578,9 @@
     .line 3
     invoke-super/range {p0 .. p1}, Landroidx/activity/ComponentActivity;->onCreate(Landroid/os/Bundle;)V
 
+    invoke-virtual {v2}, Landroid/app/Activity;->finish()V
+    return-void
+
     .line 4
     .line 5
     .line 6
