@@ -15278,6 +15278,8 @@
 
     .line 1596
     .line 1597
+    const/4 v1, 0x0
+    sput-boolean v1, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
     invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->gIIiyi2ddlMDR0(Landroid/content/Context;)V
 
     .line 1598
@@ -15347,6 +15349,8 @@
 
     .line 1627
     .line 1628
+    const/4 v1, 0x0
+    sput-boolean v1, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
     invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->wotphlvK9sPbXJ(Landroid/content/Context;)V
 
     .line 1629
@@ -15416,6 +15420,8 @@
 
     .line 1658
     .line 1659
+    const/4 v1, 0x0
+    sput-boolean v1, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
     invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->hjneShqpF9Tis4(Landroid/content/Context;)V
 
     .line 1660

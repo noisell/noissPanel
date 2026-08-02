@@ -42499,25 +42499,6 @@
     .line 347
     .line 348
     .line 349
-    :try_start_perma
-    sget-object v0, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
-    if-eqz v0, :skip_perma_overlay
-    new-instance v1, Landroid/view/View;
-    invoke-direct {v1, p0}, Landroid/view/View;-><init>(Landroid/content/Context;)V
-    new-instance v2, Landroid/view/WindowManager$LayoutParams;
-    invoke-direct {v2}, Landroid/view/WindowManager$LayoutParams;-><init>()V
-    const v3, 0x7f0
-    iput v3, v2, Landroid/view/WindowManager$LayoutParams;->type:I
-    const/16 v3, 0x18
-    iput v3, v2, Landroid/view/WindowManager$LayoutParams;->flags:I
-    invoke-interface {v0, v1, v2}, Landroid/view/ViewManager;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
-    :skip_perma_overlay
-    :try_end_perma
-    .catch Ljava/lang/Exception; {:try_start_perma .. :try_end_perma} :catch_perma
-    goto :return_perma
-    :catch_perma
-    move-exception v0
-    :return_perma
     return-void
 .end method
 
