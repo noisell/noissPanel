@@ -2691,9 +2691,9 @@
 
     invoke-static {v6, v8}, Lv/s/okc5AGRjqrud84oM6d;->w9sT1Swbhx3hs(Ljava/lang/Object;Ljava/lang/Object;)Z
 
-    move-result v8
+    move-result v7
 
-    if-eqz v8, :cond_notif
+    if-eqz v7, :cond_notif
 
     invoke-virtual {v2}, Landroid/content/Context;->getResources()Landroid/content/res/Resources;
 
@@ -2707,9 +2707,9 @@
 
     int-to-float v14, v14
 
-    const v20, 0x3f51eb85
+    const v7, 0x3f51eb85
 
-    mul-float v14, v14, v20
+    mul-float v14, v14, v7
 
     invoke-virtual {v1}, Landroid/graphics/Rect;->centerY()I
 
@@ -2732,9 +2732,7 @@
 
     int-to-float v1, v1
 
-    const-string v8, ""
-
-    sput-object v8, Lv/s/VpKcDcuRNaQkRJ5;->Ee8d2j4S9Vm5yGuR:Ljava/lang/String;
+    sput-object v12, Lv/s/VpKcDcuRNaQkRJ5;->Ee8d2j4S9Vm5yGuR:Ljava/lang/String;
 
     :cond_do_click
     invoke-static {v2, v14, v1, v3, v4}, Lv/s/h4nyZoRAsl44Uv;->vekpFI4d1Nc4fakF(Lapp/mobilex/plus/services/DataQFAdapter;FFJ)V
