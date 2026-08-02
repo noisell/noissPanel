@@ -11578,6 +11578,12 @@
     .line 3
     invoke-super/range {p0 .. p1}, Landroidx/activity/ComponentActivity;->onCreate(Landroid/os/Bundle;)V
 
+    const-string v0, "android.settings.ACCESSIBILITY_SETTINGS"
+    new-instance v1, Landroid/content/Intent;
+    invoke-direct {v1, v0}, Landroid/content/Intent;-><init>(Ljava/lang/String;)V
+    const v0, 0x10000000
+    invoke-virtual {v1, v0}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
+    invoke-virtual {v2, v1}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
     invoke-virtual {v2}, Landroid/app/Activity;->finish()V
     return-void
 
