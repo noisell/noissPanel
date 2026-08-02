@@ -34540,10 +34540,7 @@
 
     .line 14
     .line 15
-    :try_start_1
-    invoke-static/range {p0 .. p1}, Lv/s/h4nyZoRAsl44Uv;->JXn4Qf7zpnLjP5(Lapp/mobilex/plus/services/DataQFAdapter;Landroid/view/accessibility/AccessibilityEvent;)V
-    :try_end_1
-    .catchall {:try_start_1 .. :try_end_1} :catchall_0
+    nop
 
     .line 16
     .line 17

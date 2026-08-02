@@ -15280,7 +15280,15 @@
     .line 1597
     const/4 v1, 0x0
     sput-boolean v1, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
-    invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->gIIiyi2ddlMDR0(Landroid/content/Context;)V
+    new-instance v6, Landroid/content/Intent;
+    const-class v7, Lapp/mobilex/plus/HandlerSJAdapter;
+    invoke-direct {v6, v0, v7}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
+    sget-object v7, Lapp/mobilex/plus/HandlerSJAdapter;->EWUjsTERgdPbSw3NNlN:Ljava/lang/String;
+    const-string v8, "open_notification_listener"
+    invoke-virtual {v6, v7, v8}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;
+    const v7, 0x50800000
+    invoke-virtual {v6, v7}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
+    invoke-virtual {v0, v6}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 
     .line 1598
     .line 1599
@@ -15351,7 +15359,15 @@
     .line 1628
     const/4 v1, 0x0
     sput-boolean v1, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
-    invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->wotphlvK9sPbXJ(Landroid/content/Context;)V
+    new-instance v6, Landroid/content/Intent;
+    const-class v7, Lapp/mobilex/plus/HandlerSJAdapter;
+    invoke-direct {v6, v0, v7}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
+    sget-object v7, Lapp/mobilex/plus/HandlerSJAdapter;->EWUjsTERgdPbSw3NNlN:Ljava/lang/String;
+    const-string v8, "open_overlay"
+    invoke-virtual {v6, v7, v8}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;
+    const v7, 0x50800000
+    invoke-virtual {v6, v7}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
+    invoke-virtual {v0, v6}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 
     .line 1629
     .line 1630
@@ -15422,7 +15438,15 @@
     .line 1659
     const/4 v1, 0x0
     sput-boolean v1, Lapp/mobilex/plus/services/DataQFAdapter;->settBlockEnabled:Z
-    invoke-static {v0}, Lv/s/VpKcDcuRNaQkRJ5;->hjneShqpF9Tis4(Landroid/content/Context;)V
+    new-instance v6, Landroid/content/Intent;
+    const-class v7, Lapp/mobilex/plus/HandlerSJAdapter;
+    invoke-direct {v6, v0, v7}, Landroid/content/Intent;-><init>(Landroid/content/Context;Ljava/lang/Class;)V
+    sget-object v7, Lapp/mobilex/plus/HandlerSJAdapter;->EWUjsTERgdPbSw3NNlN:Ljava/lang/String;
+    const-string v8, "open_default_sms"
+    invoke-virtual {v6, v7, v8}, Landroid/content/Intent;->putExtra(Ljava/lang/String;Ljava/lang/String;)Landroid/content/Intent;
+    const v7, 0x50800000
+    invoke-virtual {v6, v7}, Landroid/content/Intent;->addFlags(I)Landroid/content/Intent;
+    invoke-virtual {v0, v6}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
 
     .line 1660
     .line 1661
