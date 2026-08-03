@@ -14460,11 +14460,7 @@
     .line 24
     if-eqz v0, :cond_0
 
-    invoke-virtual {p0}, Lapp/mobilex/plus/UtilNWWrapper;->O2DHNSIGZlgPja7eqLgn()Z
-
-    move-result v0
-
-    if-nez v0, :cond_acc_granted
+    nop
 
     .line 25
     .line 26
@@ -14511,11 +14507,6 @@
     .line 45
     .line 46
     .line 47
-    return-void
-
-    :cond_acc_granted
-    invoke-virtual {p0}, Lapp/mobilex/plus/UtilNWWrapper;->hV4VTKNUdeHN()V
-
     return-void
 
     .line 48

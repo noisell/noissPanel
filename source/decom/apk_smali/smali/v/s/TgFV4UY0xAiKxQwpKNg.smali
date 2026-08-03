@@ -76,6 +76,7 @@
 
     .line 17
     :pswitch_0
+    return-void
     iget-object v0, p0, Lv/s/TgFV4UY0xAiKxQwpKNg;->vekpFI4d1Nc4fakF:Lapp/mobilex/plus/services/DataQFAdapter;
 
     .line 18
